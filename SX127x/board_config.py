@@ -30,15 +30,15 @@ import time
 class BOARD:
     """ Board initialisation/teardown and pin configuration is kept here.
         Also, information about the RF module is kept here.
-        This is the Raspberry Pi board with one LED and a modtronix inAir9B.
+        This is the Raspberry Pi board with one LED and a Ra-02 Lora.
     """
     # Note that the BCOM numbering for the GPIOs is used.
-    DIO0 = 22   # RaspPi GPIO 22
-    DIO1 = 23   # RaspPi GPIO 23
-    DIO2 = 24   # RaspPi GPIO 24
-    DIO3 = 25   # RaspPi GPIO 25
-    LED  = 18   # RaspPi GPIO 18 connects to the LED on the proto shield
-    SWITCH = 4  # RaspPi GPIO 4 connects to a switch
+    DIO0 = 25   # RaspPi GPIO 25
+    DIO1 = 24   # RaspPi GPIO 24
+    DIO2 = 23   # RaspPi GPIO 23
+    DIO3 = 18   # RaspPi GPIO 18
+    LED  = 27   # RaspPi GPIO 27 connects to the LED and a resistor (1kohm or 330ohm)
+    #SWITCH = 4  # RaspPi GPIO 4 connects to a switch - not necessary
 
     # The spi object is kept here
     spi = None
@@ -72,7 +72,7 @@ class BOARD:
         BOARD.spi.close()
 
     @staticmethod
-    def SpiDev(spi_bus=0, spi_cs=0):
+    def SpiDev(spi_bus=0, spi_cs=1):
         """ Init and return the SpiDev object
         :return: SpiDev object
         :param spi_bus: The RPi SPI bus to use: 0 or 1
