@@ -1,9 +1,9 @@
 """ Defines LoRaArgumentParser which extends argparse.ArgumentParser with standard config parameters for the SX127x. """
 # -*- coding: utf-8 -*-
 
-# Copyright 2018 Mayer Analytics Ltd.
+# Copyright 2018 Mayer Analytics Ltd. Rui Silva
 #
-# This file is part of pySX127x.
+# This file is part of rpsreal/pySX127x.
 #
 # pySX127x is free software: you can redistribute it and/or modify it under the terms of the GNU Affero General Public
 # License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
