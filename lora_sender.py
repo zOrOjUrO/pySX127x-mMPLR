@@ -46,17 +46,16 @@ class LoRaRcvCont(LoRa):
         payload = self.read_payload(nocheck=True)
         print(bytes(payload).decode("utf-8",'ignore'))
         self.set_mode(MODE.SLEEP)
-        self.reset_ptr_rx()
-        self.set_mode(MODE.RXCONT)
         sleep(5)
         print("Send again")
-        self.set_mode(MODE.STDBY)
+        self.set_mode(MODE.TX)
         self.clear_irq_flags(TxDone=1)
         sys.stdout.flush()
         self.tx_counter += 1
         sys.stdout.write("\rtx #%d" % self.tx_counter)
         self.write_payload([255, 255, 0, 0, 104, 101, 108, 108, 111])
-        self.set_mode(MODE.TX)
+        self.reset_ptr_rx()
+        self.set_mode(MODE.RXCONT)
         BOARD.led_off()
 
     def on_tx_done(self):
@@ -84,11 +83,8 @@ class LoRaRcvCont(LoRa):
         print(self.get_irq_flags())
 
     def start(self):
-        self.set_mode(MODE.STDBY)
-        self.clear_irq_flags(TxDone=1)
-        sys.stdout.flush()
-        self.tx_counter += 1
-        sys.stdout.write("\rtx #%d" % self.tx_counter)
+        sys.stdout.write("\rstart")
+        self.tx_counter = 0
         self.write_payload([255, 255, 0, 0, 104, 101, 108, 108, 111])
         self.reset_ptr_rx()
         self.set_mode(MODE.RXCONT)
