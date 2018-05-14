@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-""" This program is a simple packet receiver, always listening """
+""" This program sends a pacode and waits for a response. """
 
 # Copyright 2018 Rui Silva.
 #
@@ -43,11 +43,21 @@ class LoRaRcvCont(LoRa):
         print("\nRxDone")
         self.clear_irq_flags(RxDone=1)
         payload = self.read_payload(nocheck=True)
-        print(bytes(payload).decode())
+        print(bytes(payload).decode("utf-8",'ignore'))
         self.set_mode(MODE.SLEEP)
         self.reset_ptr_rx()
         BOARD.led_off()
         self.set_mode(MODE.RXCONT)
+        print("Send again")
+        sleep(5)
+        self.set_mode(MODE.STDBY)
+        self.clear_irq_flags(TxDone=1)
+        sys.stdout.flush()
+        self.tx_counter += 1
+        sys.stdout.write("\rtx #%d" % self.tx_counter)
+        self.write_payload([255, 255, 0, 0, 104, 101, 108, 108, 111])
+        self.set_mode(MODE.TX)
+        BOARD.led_off()
 
     def on_tx_done(self):
         print("\nTxDone")
@@ -74,6 +84,10 @@ class LoRaRcvCont(LoRa):
         print(self.get_irq_flags())
 
     def start(self):
+        global args
+        self.tx_counter = 0
+        self.write_payload([255, 255, 0, 0, 104, 101, 108, 108, 111])
+        self.set_mode(MODE.TX)           
         self.reset_ptr_rx()
         self.set_mode(MODE.RXCONT)
         while True:
@@ -94,6 +108,7 @@ lora.set_pa_config(pa_select=1)
 assert(lora.get_agc_auto_on() == 1)
 
 try:
+    print("START")
     lora.start()
 except KeyboardInterrupt:
     sys.stdout.flush()
