@@ -41,13 +41,15 @@ class LoRaRcvCont(LoRa):
     def on_rx_done(self):
         BOARD.led_on()
         print("\nRxDone")
+        print("Recebeu a resposta:")
         self.clear_irq_flags(RxDone=1)
         payload = self.read_payload(nocheck=True)
         print(bytes(payload).decode("utf-8",'ignore'))
         self.set_mode(MODE.SLEEP)
         self.reset_ptr_rx()
         self.set_mode(MODE.RXCONT)
-        print("Send reply")
+        sleep(5)
+        print("Send again")
         self.set_mode(MODE.STDBY)
         self.clear_irq_flags(TxDone=1)
         sys.stdout.flush()
@@ -81,7 +83,13 @@ class LoRaRcvCont(LoRa):
         print("\non_FhssChangeChannel")
         print(self.get_irq_flags())
 
-    def start(self):          
+    def start(self):
+        self.set_mode(MODE.STDBY)
+        self.clear_irq_flags(TxDone=1)
+        sys.stdout.flush()
+        self.tx_counter += 1
+        sys.stdout.write("\rtx #%d" % self.tx_counter)
+        self.write_payload([255, 255, 0, 0, 104, 101, 108, 108, 111])
         self.reset_ptr_rx()
         self.set_mode(MODE.RXCONT)
         while True:
