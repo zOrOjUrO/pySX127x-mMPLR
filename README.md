@@ -1,3 +1,6 @@
+# This fork
+This fork is an adaptation of the original mayeranalytic configured to work with Ai-Thinker Ra-02 Modules This module uses SX1278 IC and works on a 433MHz frequency.
+
 # Overview
 
 This is a python interface to the [Semtech SX1276/7/8/9](http://www.semtech.com/wireless-rf/rf-transceivers/) 
