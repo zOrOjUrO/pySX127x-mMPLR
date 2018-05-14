@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-""" This program sends a pacode and waits for a response. """
+""" This program sends a packet and waits for a response. """
 
 # Copyright 2018 Rui Silva.
 #
@@ -46,10 +46,8 @@ class LoRaRcvCont(LoRa):
         print(bytes(payload).decode("utf-8",'ignore'))
         self.set_mode(MODE.SLEEP)
         self.reset_ptr_rx()
-        BOARD.led_off()
         self.set_mode(MODE.RXCONT)
-        print("Send again")
-        sleep(5)
+        print("Send reply")
         self.set_mode(MODE.STDBY)
         self.clear_irq_flags(TxDone=1)
         sys.stdout.flush()
@@ -83,11 +81,7 @@ class LoRaRcvCont(LoRa):
         print("\non_FhssChangeChannel")
         print(self.get_irq_flags())
 
-    def start(self):
-        global args
-        self.tx_counter = 0
-        self.write_payload([255, 255, 0, 0, 104, 101, 108, 108, 111])
-        self.set_mode(MODE.TX)           
+    def start(self):          
         self.reset_ptr_rx()
         self.set_mode(MODE.RXCONT)
         while True:
