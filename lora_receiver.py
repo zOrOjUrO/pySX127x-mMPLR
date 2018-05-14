@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-""" This program sends a packet and waits for a response. """
+""" This program listens and sends you an answer if receive a packet. """
 
 # Copyright 2018 Rui Silva.
 #
