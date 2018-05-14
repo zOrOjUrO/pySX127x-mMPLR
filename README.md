@@ -3,6 +3,9 @@ This fork is an adaptation of the original mayeranalytic configured to work with
 
 Easy setup:
 ```bash
+sudo raspi-config
+-- Interfacing Options
+--- enable SPI
 sudo apt-get install python-dev python3-dev
 sudo apt-get install python-pip python3-pip
 sudo apt-get install python-rpi.gpio python3-rpi.gpio
