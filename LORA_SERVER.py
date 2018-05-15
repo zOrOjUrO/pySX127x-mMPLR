@@ -21,8 +21,7 @@
 # You should have received a copy of the GNU General Public License along with pySX127.  If not, see
 # <http://www.gnu.org/licenses/>.
 
-
-from time import sleep
+import time
 from SX127x.LoRa import *
 from SX127x.LoRaArgumentParser import LoRaArgumentParser
 from SX127x.board_config import BOARD
@@ -41,7 +40,7 @@ class mylora(LoRa):
 
     def on_rx_done(self):
         BOARD.led_on()
-        print("\nRxDone")
+        #print("\nRxDone")
         self.clear_irq_flags(RxDone=1)
         payload = self.read_payload(nocheck=True)
         print ("Receive: ")
@@ -51,7 +50,6 @@ class mylora(LoRa):
         self.write_payload([255, 255, 0, 0, 65, 67, 75]) # Send ACK
         self.set_mode(MODE.TX)
         self.var=1
-        print("exitRx")
 
     def on_tx_done(self):
         print("\nTxDone")
@@ -80,15 +78,21 @@ class mylora(LoRa):
     def start(self):          
         while True:
             self.reset_ptr_rx()
-            self.set_mode(MODE.RXCONT) # wait for ACK
-            sleep(20)
-            print ("Send: INF")
-            self.write_payload([255, 255, 0, 0, 73, 78, 70]) # Send INF
-            self.set_mode(MODE.TX)
-            print ("a enviar pacote")
+            self.set_mode(MODE.RXCONT) # Receiver mode
+            sleep(10)
             
-            while self.var==0: # wait for ACK
-                pass;
+            while (self.var==0):
+                print ("Send: INF")
+                self.write_payload([255, 255, 0, 0, 73, 78, 70]) # Send INF
+                self.set_mode(MODE.TX)
+                sleep(1) # there must be a better solution but sleep() works
+                self.reset_ptr_rx()
+                self.set_mode(MODE.RXCONT) # Receiver mode
+            
+                start_time = time.time()
+                while (time.time() - start_time < 10): # wait until receive data or 10s
+                    pass;
+            
             self.var=0
 
 lora = mylora(verbose=False)
