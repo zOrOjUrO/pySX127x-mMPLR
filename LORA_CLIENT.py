@@ -44,12 +44,13 @@ class mylora(LoRa):
         payload = self.read_payload(nocheck=True )# Receive DATA
         print ("Receive: ")
         mens=bytes(payload).decode("utf-8",'ignore')
+        mens=mens[2:] #to discard \x00\x00
         print(mens)
         BOARD.led_off()
         if mens=="INF":
             print("Received data request INF")
-            print ("Send: ACK")
-            self.write_payload([255, 255, 0, 0, 65, 67, 75]) # Send ACK
+            print ("Send mens: data")
+            self.write_payload([255, 255, 0, 0, 100, 97, 116, 97]) # Send data
             self.set_mode(MODE.TX)
         time.sleep(1)
         self.reset_ptr_rx()
