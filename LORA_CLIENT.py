@@ -36,20 +36,25 @@ class mylora(LoRa):
         super(mylora, self).__init__(verbose)
         self.set_mode(MODE.SLEEP)
         self.set_dio_mapping([0] * 6)
-        self.var=0
 
     def on_rx_done(self):
         BOARD.led_on()
         #print("\nRxDone")
         self.clear_irq_flags(RxDone=1)
-        payload = self.read_payload(nocheck=True)
+        payload = self.read_payload(nocheck=True )# Receive DATA
         print ("Receive: ")
-        print(bytes(payload).decode("utf-8",'ignore')) # Receive DATA
+        mens=bytes(payload).decode("utf-8",'ignore')
+        print(mens)
         BOARD.led_off()
-        print ("Send: ACK")
-        self.write_payload([255, 255, 0, 0, 65, 67, 75]) # Send ACK
-        self.set_mode(MODE.TX)
-        self.var=1
+        if mens=="INF":
+            print("Received data request INF")
+            print ("Send: ACK")
+            self.write_payload([255, 255, 0, 0, 65, 67, 75]) # Send ACK
+            self.set_mode(MODE.TX)
+        self.set_mode(MODE.SLEEP)
+        self.reset_ptr_rx()
+        self.set_mode(MODE.RXCONT)
+        print("fim")
 
     def on_tx_done(self):
         print("\nTxDone")
@@ -79,21 +84,9 @@ class mylora(LoRa):
         while True:
             self.reset_ptr_rx()
             self.set_mode(MODE.RXCONT) # Receiver mode
-            sleep(10)
+            while True:
+                pass;
             
-            while (self.var==0):
-                print ("Send: INF")
-                self.write_payload([255, 255, 0, 0, 73, 78, 70]) # Send INF
-                self.set_mode(MODE.TX)
-                sleep(1) # there must be a better solution but sleep() works
-                self.reset_ptr_rx()
-                self.set_mode(MODE.RXCONT) # Receiver mode
-            
-                start_time = time.time()
-                while (time.time() - start_time < 10): # wait until receive data or 10s
-                    pass;
-            
-            self.var=0
 
 lora = mylora(verbose=False)
 args = parser.parse_args(lora) # configs in LoRaArgumentParser.py
