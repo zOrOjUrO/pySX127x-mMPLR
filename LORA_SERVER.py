@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-""" This program listens and sends you an answer if receive a packet. """
+""" This program asks a client for data and waits for the response, then sends an ACK. """
 
 # Copyright 2018 Rui Silva.
 #
@@ -43,23 +43,23 @@ class LoRaRcvCont(LoRa):
         print("\nRxDone")
         self.clear_irq_flags(RxDone=1)
         payload = self.read_payload(nocheck=True)
-        print(bytes(payload).decode("utf-8",'ignore'))
-        self.set_mode(MODE.SLEEP)
-        self.reset_ptr_rx()
-        self.set_mode(MODE.RXCONT)
-        print("Send reply")
-        self.set_mode(MODE.STDBY)
-        self.clear_irq_flags(TxDone=1)
-        sys.stdout.flush()
-        self.tx_counter += 1
-        sys.stdout.write("\rtx #%d" % self.tx_counter)
-        self.write_payload([255, 255, 0, 0, 104, 101, 108, 108, 111])
-        self.set_mode(MODE.TX)
+        print ("Receive: ")
+        print(bytes(payload).decode("utf-8",'ignore')) # Receive DATA
         BOARD.led_off()
+        print ("Send: ACK")
+        self.write_payload([255, 255, 0, 0, 65, 67, 75]) # Send ACK
+        self.set_mode(MODE.TX)
+        print("exitRx")
 
     def on_tx_done(self):
         print("\nTxDone")
-        print(self.get_irq_flags())
+        self.set_mode(MODE.STDBY)
+        self.clear_irq_flags(TxDone=1)
+        print ("Packet Sent")
+        self.set_mode(MODE.SLEEP)
+        self.reset_ptr_rx()
+        self.set_mode(MODE.RXCONT) # wait for ACK
+        print("exitTx")
 
     def on_cad_done(self):
         print("\non_CadDone")
@@ -82,14 +82,15 @@ class LoRaRcvCont(LoRa):
         print(self.get_irq_flags())
 
     def start(self):          
-        self.reset_ptr_rx()
-        self.set_mode(MODE.RXCONT)
+        self.reset_ptr_rx() # Get FIFO ready for RX
+        self.set_mode(MODE.RXSINGLE) # Mode RX single
         while True:
-            sleep(.5)
-            rssi_value = self.get_rssi_value()
-            status = self.get_modem_status()
-            sys.stdout.flush()
-            sys.stdout.write("\r%d %d %d" % (rssi_value, status['rx_ongoing'], status['modem_clear']))
+            sleep(20)
+            print ("Send: INF")
+            self.write_payload([255, 255, 0, 0, 73, 78, 70]) # Send INF
+            self.set_mode(MODE.TX)
+            
+            
 
 
 lora = LoRaRcvCont(verbose=False)
