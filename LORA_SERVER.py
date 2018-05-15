@@ -37,6 +37,7 @@ class mylora(LoRa):
         super(mylora, self).__init__(verbose)
         self.set_mode(MODE.SLEEP)
         self.set_dio_mapping([0] * 6)
+        self.var=0
 
     def on_rx_done(self):
         BOARD.led_on()
@@ -49,18 +50,12 @@ class mylora(LoRa):
         print ("Send: ACK")
         self.write_payload([255, 255, 0, 0, 65, 67, 75]) # Send ACK
         self.set_mode(MODE.TX)
+        self.var=1
         print("exitRx")
 
     def on_tx_done(self):
         print("\nTxDone")
-        self.set_mode(MODE.STDBY)
-        self.clear_irq_flags(TxDone=1)
-        print ("Packet Sent")
-        sleep(20)
-        self.set_mode(MODE.SLEEP)
-        self.reset_ptr_rx()
-        self.set_mode(MODE.RXCONT) # wait for ACK
-        print("exitTx")
+        print(self.get_irq_flags())
 
     def on_cad_done(self):
         print("\non_CadDone")
@@ -91,11 +86,10 @@ class mylora(LoRa):
             self.write_payload([255, 255, 0, 0, 73, 78, 70]) # Send INF
             self.set_mode(MODE.TX)
             print ("a enviar pacote")
-            sleep(20)
             
-            
-            
-
+            while self.var==0: # wait for ACK
+                pass;
+            self.var=0
 
 lora = mylora(verbose=False)
 args = parser.parse_args(lora) # configs in LoRaArgumentParser.py
