@@ -13,7 +13,20 @@ sudo apt-get install python-spidev python3-spidev
 sudo git clone https://github.com/rpsreal/pySX127x
 ```
 
+| Ra-02 LoRa pin  | RaspPi GPIO |
+|:----------------|:-----------:|
+|       MOSI      | GPIO 10     |
+|       MISO      | GPIO 9      |
+|    SCK (SCLK)   | GPIO 11     |
+|       NSS       | GPIO 7 (CE1)|
+|    DIO0 (IRQ)   | GPIO 25     |
+|       DIO1      | GPIO 24     |
+|       DIO2      | GPIO 23     |
+|       DIO3      | GPIO 18     |
+|    RST (Reset)  | GPIO 22     |
+|       LED       | GPIO 27     |
 
+LED external with 1k ohm or 330ohm (optional) 
 
 # Overview
 
