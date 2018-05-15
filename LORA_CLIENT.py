@@ -22,7 +22,6 @@
 # <http://www.gnu.org/licenses/>.
 
 import time
-from time import sleep
 from SX127x.LoRa import *
 from SX127x.LoRaArgumentParser import LoRaArgumentParser
 from SX127x.board_config import BOARD
@@ -52,7 +51,7 @@ class mylora(LoRa):
             print ("Send: ACK")
             self.write_payload([255, 255, 0, 0, 65, 67, 75]) # Send ACK
             self.set_mode(MODE.TX)
-        self.set_mode(MODE.SLEEP)
+        time.sleep(1)
         self.reset_ptr_rx()
         self.set_mode(MODE.RXCONT)
         print("fim")
