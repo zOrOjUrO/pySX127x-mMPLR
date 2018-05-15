@@ -29,12 +29,12 @@ from SX127x.board_config import BOARD
 
 BOARD.setup()
 
-parser = LoRaArgumentParser("Continous LoRa receiver.")
+parser = LoRaArgumentParser("Lora tester")
 
 
-class LoRaRcvCont(LoRa):
+class mylora(LoRa):
     def __init__(self, verbose=False):
-        super(LoRaRcvCont, self).__init__(verbose)
+        super(mylora, self).__init__(verbose)
         self.set_mode(MODE.SLEEP)
         self.set_dio_mapping([0] * 6)
 
@@ -56,6 +56,7 @@ class LoRaRcvCont(LoRa):
         self.set_mode(MODE.STDBY)
         self.clear_irq_flags(TxDone=1)
         print ("Packet Sent")
+        sleep(20)
         self.set_mode(MODE.SLEEP)
         self.reset_ptr_rx()
         self.set_mode(MODE.RXCONT) # wait for ACK
@@ -82,21 +83,24 @@ class LoRaRcvCont(LoRa):
         print(self.get_irq_flags())
 
     def start(self):          
-        self.reset_ptr_rx() # Get FIFO ready for RX
-        self.set_mode(MODE.RXSINGLE) # Mode RX single
         while True:
+            self.reset_ptr_rx()
+            self.set_mode(MODE.RXCONT) # wait for ACK
             sleep(20)
             print ("Send: INF")
             self.write_payload([255, 255, 0, 0, 73, 78, 70]) # Send INF
             self.set_mode(MODE.TX)
+            print ("a enviar pacote")
+            sleep(20)
+            
             
             
 
 
-lora = LoRaRcvCont(verbose=False)
+lora = mylora(verbose=False)
 args = parser.parse_args(lora) # configs in LoRaArgumentParser.py
 
-lora.set_mode(MODE.STDBY)
+#lora.set_mode(MODE.STDBY)
 lora.set_pa_config(pa_select=1)
 
 
