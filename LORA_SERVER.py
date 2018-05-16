@@ -47,7 +47,7 @@ class mylora(LoRa):
         print(bytes(payload).decode("utf-8",'ignore')) # Receive DATA
         BOARD.led_off()
         print ("Send: ACK")
-        self.write_payload([255, 255, 0, 0, 65, 67, 75]) # Send ACK
+        self.write_payload([255, 255, 0, 0, 65, 67, 75, 0]) # Send ACK
         self.set_mode(MODE.TX)
         self.var=1
 
@@ -79,7 +79,7 @@ class mylora(LoRa):
         while True:
             while (self.var==0):
                 print ("Send: INF")
-                self.write_payload([255, 255, 0, 0, 73, 78, 70]) # Send INF
+                self.write_payload([255, 255, 0, 0, 73, 78, 70, 0]) # Send INF
                 self.set_mode(MODE.TX)
                 time.sleep(.5) # there must be a better solution but sleep() works
                 self.reset_ptr_rx()
