@@ -77,10 +77,6 @@ class mylora(LoRa):
 
     def start(self):          
         while True:
-            self.reset_ptr_rx()
-            self.set_mode(MODE.RXCONT) # Receiver mode
-            time.sleep(10)
-            
             while (self.var==0):
                 print ("Send: INF")
                 self.write_payload([255, 255, 0, 0, 73, 78, 70]) # Send INF
@@ -94,6 +90,9 @@ class mylora(LoRa):
                     pass;
             
             self.var=0
+            self.reset_ptr_rx()
+            self.set_mode(MODE.RXCONT) # Receiver mode
+            time.sleep(10)
 
 lora = mylora(verbose=False)
 args = parser.parse_args(lora) # configs in LoRaArgumentParser.py
