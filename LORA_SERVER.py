@@ -81,7 +81,7 @@ class mylora(LoRa):
                 print ("Send: INF")
                 self.write_payload([255, 255, 0, 0, 73, 78, 70]) # Send INF
                 self.set_mode(MODE.TX)
-                time.sleep(1) # there must be a better solution but sleep() works
+                time.sleep(.5) # there must be a better solution but sleep() works
                 self.reset_ptr_rx()
                 self.set_mode(MODE.RXCONT) # Receiver mode
             
