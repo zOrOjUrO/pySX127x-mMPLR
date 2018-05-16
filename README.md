@@ -1,5 +1,5 @@
 # This fork
-This fork is an adaptation of the original mayeranalytic configured to work with Ai-Thinker Ra-02 Modules This module uses SX1278 IC and works on a 433MHz frequency.
+This fork is an adaptation of the original mayeranalytic configured to work with Ai-Thinker Ra-02 Modules This module uses SX1278 IC and works on a 433MHz frequency. The examples in this library LORA_SERVER.py and LORA_CLIENT.py can be used to communicate with the Arduino through the RADIOHEAD library, for more information see these examples -> [rpsreal/LoRa_Ra-02_Arduino](https://github.com/rpsreal/LoRa_Ra-02_Arduino).
 
 Easy setup:
 ```bash
