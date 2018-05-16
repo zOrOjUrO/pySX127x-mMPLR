@@ -37,6 +37,7 @@ class BOARD:
     DIO1 = 24   # RaspPi GPIO 24
     DIO2 = 23   # RaspPi GPIO 23
     DIO3 = 18   # RaspPi GPIO 18
+    RST  = 22   # RaspPi GPIO 22
     LED  = 27   # RaspPi GPIO 27 connects to the LED and a resistor (1kohm or 330ohm)
     #SWITCH = 4  # RaspPi GPIO 4 connects to a switch - not necessary
 
@@ -56,7 +57,9 @@ class BOARD:
         GPIO.setmode(GPIO.BCM)
         # LED
         GPIO.setup(BOARD.LED, GPIO.OUT)
+        GPIO.setup(BOARD.RST, GPIO.OUT)
         GPIO.output(BOARD.LED, 0)
+        GPIO.output(BOARD.RST, 1)
         # switch
         #GPIO.setup(BOARD.SWITCH, GPIO.IN, pull_up_down=GPIO.PUD_DOWN) 
         # DIOx
@@ -119,6 +122,17 @@ class BOARD:
         :return: 0
         """
         GPIO.output(BOARD.LED, 0)
+        return 0
+    
+    @staticmethod
+    def reset():
+        """ manual reset
+        :return: 0
+        """
+        GPIO.output(BOARD.RST, 0)
+        time.sleep(.01)
+        GPIO.output(BOARD.RST, 1)
+        time.sleep(.01)
         return 0
 
     @staticmethod
