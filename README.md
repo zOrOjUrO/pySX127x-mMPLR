@@ -28,6 +28,7 @@ sudo git clone https://github.com/rpsreal/pySX127x
 
 LED external with 1k ohm or 330ohm (optional) 
 
+# forked from mayeranalytics/pySX127x
 # Overview
 
 This is a python interface to the [Semtech SX1276/7/8/9](http://www.semtech.com/wireless-rf/rf-transceivers/) 
