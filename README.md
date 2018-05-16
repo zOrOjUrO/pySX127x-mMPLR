@@ -26,9 +26,11 @@ sudo git clone https://github.com/rpsreal/pySX127x
 |    RST (Reset)  | GPIO 22     |
 |       LED       | GPIO 27     |
 
-LED external with 1k ohm or 330ohm (optional) 
+LED external with 1k ohm or 330ohm (optional)
 
-# forked from mayeranalytics/pySX127x
+Developed by Rui Silva, Porto, Portugal
+
+# Forked from mayeranalytics/pySX127x
 # Overview
 
 This is a python interface to the [Semtech SX1276/7/8/9](http://www.semtech.com/wireless-rf/rf-transceivers/) 
