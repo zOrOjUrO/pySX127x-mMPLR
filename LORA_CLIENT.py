@@ -50,13 +50,12 @@ class mylora(LoRa):
         if mens=="INF":
             print("Received data request INF")
             time.sleep(2)
-            print ("Send mens: data")
+            print ("Send mens: DATA RASPBERRY PI")
             self.write_payload([255, 255, 0, 0, 68, 65, 84, 65, 32, 82, 65, 83, 80, 66, 69, 82, 82, 89, 32, 80, 73]) # Send DATA RASPBERRY PI
             self.set_mode(MODE.TX)
         time.sleep(.5)
         self.reset_ptr_rx()
         self.set_mode(MODE.RXCONT)
-        print("fim")
 
     def on_tx_done(self):
         print("\nTxDone")
