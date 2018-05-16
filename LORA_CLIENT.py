@@ -49,11 +49,11 @@ class mylora(LoRa):
         BOARD.led_off()
         if mens=="INF":
             print("Received data request INF")
-            time.sleep(3)
+            time.sleep(2)
             print ("Send mens: data")
             self.write_payload([255, 255, 0, 0, 100, 97, 116, 97]) # Send data
             self.set_mode(MODE.TX)
-        time.sleep(1)
+        time.sleep(.5)
         self.reset_ptr_rx()
         self.set_mode(MODE.RXCONT)
         print("fim")
