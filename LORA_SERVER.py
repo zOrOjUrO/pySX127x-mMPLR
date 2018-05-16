@@ -46,6 +46,7 @@ class mylora(LoRa):
         print ("Receive: ")
         print(bytes(payload).decode("utf-8",'ignore')) # Receive DATA
         BOARD.led_off()
+        time.sleep(1) # Wait for the client be ready
         print ("Send: ACK")
         self.write_payload([255, 255, 0, 0, 65, 67, 75, 0]) # Send ACK
         self.set_mode(MODE.TX)
