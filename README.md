@@ -12,6 +12,7 @@ sudo apt-get install python-rpi.gpio python3-rpi.gpio
 sudo apt-get install python-spidev python3-spidev
 sudo git clone https://github.com/rpsreal/pySX127x
 ```
+Make the connections as shown below
 
 | Ra-02 LoRa pin  | RaspPi GPIO |
 |:----------------|:-----------:|
@@ -27,6 +28,15 @@ sudo git clone https://github.com/rpsreal/pySX127x
 |       LED       | GPIO 27     |
 
 LED external with 1k ohm or 330ohm (optional)
+
+Now you can start LORA_SERVER.py or LORA_CLIENT.py
+To work, there must be another LORA_SERVER or LORA_CLIENT running on another device (Raspberry Pi or Arduino)
+
+For example, if you are running on an [Arduino the LORA_CLIENT](https://github.com/rpsreal/LoRa_Ra-02_Arduino/blob/master/LORA_CLIENT.ino) then start the [LORA_SERVER.py on Raspberry Pi](https://github.com/rpsreal/pySX127x/blob/master/LORA_SERVER.py) like this:
+```bash
+cd pySX127x
+sudo python3 ./LORA_SERVER.py
+```
 
 Developed by Rui Silva, Porto, Portugal
 
