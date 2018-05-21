@@ -35,8 +35,21 @@ To work, there must be another LORA_SERVER or LORA_CLIENT running on another dev
 For example, if you are running on an [Arduino the LORA_CLIENT](https://github.com/rpsreal/LoRa_Ra-02_Arduino/blob/master/LORA_CLIENT.ino) then start the [LORA_SERVER.py on Raspberry Pi](https://github.com/rpsreal/pySX127x/blob/master/LORA_SERVER.py) like this:
 ```bash
 cd pySX127x
-sudo python3 ./LORA_SERVER.py
+python3 ./LORA_SERVER.py
 ```
+
+If it is necessary to run the library from anywhere:
+```bash
+nano ~/.bashrc
+```
+Put this at the end of the file: 
+> export PYTHONPATH=/home/pi/pySX127x/
+
+And then:
+```bash
+source ~/.bashrc
+```
+
 
 Developed by Rui Silva, Porto, Portugal
 
