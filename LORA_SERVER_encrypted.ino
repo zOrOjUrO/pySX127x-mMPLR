@@ -47,7 +47,14 @@ class mylora(LoRa):
         self.clear_irq_flags(RxDone=1)
         payload = self.read_payload(nocheck=True)
         print ("Receive: ")
-        print(bytes(payload).decode("utf-8",'ignore')) # Receive DATA
+        #print(bytes(payload).decode("utf-8",'ignore')) # Receive DATA
+        mens=bytes(payload).decode("utf-8",'ignore')
+        mens=mens[2:-1] #to discard \x00\x00 and \x00 at the end
+        print(mens)
+        cipher = AES.new(self.key)
+        decoded = cipher.decrypt(base64.b64decode(mens))
+        print ("Decoded: ")
+        print(decoded)
         BOARD.led_off()
         time.sleep(1) # Wait for the client be ready
         print ("Send: ACK")
