@@ -21,10 +21,12 @@
 # You should have received a copy of the GNU General Public License along with pySX127.  If not, see
 # <http://www.gnu.org/licenses/>.
 
-import time
+import time, base64
 from SX127x.LoRa import *
 from SX127x.LoRaArgumentParser import LoRaArgumentParser
 from SX127x.board_config import BOARD
+from Crypto.Cipher import AES
+
 
 BOARD.setup()
 BOARD.reset()
@@ -37,6 +39,7 @@ class mylora(LoRa):
         self.set_mode(MODE.SLEEP)
         self.set_dio_mapping([0] * 6)
         self.var=0
+        self.key = '1234567890123456'
 
     def on_rx_done(self):
         BOARD.led_on()
@@ -80,7 +83,7 @@ class mylora(LoRa):
         while True:
             while (self.var==0):
                 print ("Send: INF")
-                self.write_payload([255, 255, 0, 0, 73, 78, 70, 0]) # Send INF
+                self.write_payload([255, 255, 57, 90, 54, 118, 106, 71, 75, 51, 87, 75, 107, 79, 99, 55, 76, 122, 112, 65, 86, 88, 79, 81, 61, 61, 0]) # Send INF
                 self.set_mode(MODE.TX)
                 time.sleep(.5) # there must be a better solution but sleep() works
                 self.reset_ptr_rx()
