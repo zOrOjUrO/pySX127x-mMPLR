@@ -47,14 +47,21 @@ class mylora(LoRa):
         self.clear_irq_flags(RxDone=1)
         payload = self.read_payload(nocheck=True)
         print ("Receive: ")
-        #print(bytes(payload).decode("utf-8",'ignore')) # Receive DATA
-        mens=bytes(payload).decode("utf-8",'ignore')
-        mens=mens[2:-1] #to discard \x00\x00 and \x00 at the end
+        print(payload)
+        print ("Que e igual: ")
+        mens=payload[4:-1]
+        #print(bytes(mens).decode("utf-8",'ignore')) # Receive DATA
+        mens=bytes(mens).decode("utf-8",'ignore')
         print(mens)
+        #mens=mens[2:-1] #to discard \x00\x00 and \x00 at the end
+        #print(mens, payload)
         cipher = AES.new(self.key)
         decoded = cipher.decrypt(base64.b64decode(mens))
         print ("Decoded: ")
         print(decoded)
+        print ("FINAL: ")
+        print(bytes(decoded).decode("utf-8",'ignore'))
+        
         BOARD.led_off()
         time.sleep(1) # Wait for the client be ready
         print ("Send: ACK")
@@ -90,7 +97,7 @@ class mylora(LoRa):
         while True:
             while (self.var==0):
                 print ("Send: INF")
-                self.write_payload([255, 255, 57, 90, 54, 118, 106, 71, 75, 51, 87, 75, 107, 79, 99, 55, 76, 122, 112, 65, 86, 88, 79, 81, 61, 61, 0]) # Send INF
+                self.write_payload([255, 255, 0, 0, 57, 90, 54, 118, 106, 71, 75, 51, 87, 75, 107, 79, 99, 55, 76, 122, 112, 65, 86, 88, 79, 81, 61, 61, 0]) # Send INF
                 self.set_mode(MODE.TX)
                 time.sleep(.5) # there must be a better solution but sleep() works
                 self.reset_ptr_rx()
