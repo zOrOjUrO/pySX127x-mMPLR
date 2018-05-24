@@ -50,8 +50,8 @@ class mylora(LoRa):
         mens=bytes(mens).decode("utf-8",'ignore')
         cipher = AES.new(self.key)
         decoded = cipher.decrypt(base64.b64decode(mens))
+        decoded = bytes(decoded).decode("utf-8",'ignore')
         print ("== RECEIVE: ", mens, "  |  Decoded: ",decoded )
-        print(bytes(decoded).decode("utf-8",'ignore'))
         
         BOARD.led_off()
         time.sleep(1) # Wait for the client be ready
