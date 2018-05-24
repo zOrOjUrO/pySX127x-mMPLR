@@ -97,7 +97,17 @@ class mylora(LoRa):
         while True:
             while (self.var==0):
                 print ("Send: INF")
-                self.write_payload([255, 255, 0, 0, 57, 90, 54, 118, 106, 71, 75, 51, 87, 75, 107, 79, 99, 55, 76, 122, 112, 65, 86, 88, 79, 81, 61, 61, 0]) # Send INF
+                msg_text = 'INF             '
+                cipher = AES.new(self.key)
+                encoded = base64.b64encode(cipher.encrypt(msg_text))
+                lista=list(encoded)
+                lista.insert(0,0)
+                lista.insert(0,0)
+                lista.insert(0,255)
+                lista.insert(0,255)
+                lista.append(0)
+                self.write_payload(lista)
+                #self.write_payload([255, 255, 0, 0, 57, 90, 54, 118, 106, 71, 75, 51, 87, 75, 107, 79, 99, 55, 76, 122, 112, 65, 86, 88, 79, 81, 61, 61, 0]) # Send INF
                 self.set_mode(MODE.TX)
                 time.sleep(.5) # there must be a better solution but sleep() works
                 self.reset_ptr_rx()
