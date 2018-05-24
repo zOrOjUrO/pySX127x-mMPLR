@@ -65,7 +65,21 @@ class mylora(LoRa):
         BOARD.led_off()
         time.sleep(1) # Wait for the client be ready
         print ("Send: ACK")
-        self.write_payload([255, 255, 0, 0, 65, 67, 75, 0]) # Send ACK
+        
+        msg_text = 'ACK             '
+        cipher = AES.new(self.key)
+        encoded = base64.b64encode(cipher.encrypt(msg_text))
+        print ("Encoded: ")
+        print(encoded)
+        lista=list(encoded)
+        lista.insert(0,0)
+        lista.insert(0,0)
+        lista.insert(0,255)
+        lista.insert(0,255)
+        lista.append(0)
+        self.write_payload(lista)
+        
+        #self.write_payload([255, 255, 0, 0, 65, 67, 75, 0]) # Send ACK
         self.set_mode(MODE.TX)
         self.var=1
 
