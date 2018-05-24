@@ -100,6 +100,8 @@ class mylora(LoRa):
                 msg_text = 'INF             '
                 cipher = AES.new(self.key)
                 encoded = base64.b64encode(cipher.encrypt(msg_text))
+                print ("Encoded: ")
+                print(encoded)
                 lista=list(encoded)
                 lista.insert(0,0)
                 lista.insert(0,0)
