@@ -46,31 +46,19 @@ class mylora(LoRa):
         #print("\nRxDone")
         self.clear_irq_flags(RxDone=1)
         payload = self.read_payload(nocheck=True)
-        print ("Receive: ")
-        print(payload)
-        print ("Que e igual: ")
-        mens=payload[4:-1]
-        #print(bytes(mens).decode("utf-8",'ignore')) # Receive DATA
+        mens=payload[4:-1] #to discard \xff\xff\x00\x00 and \x00 at the end
         mens=bytes(mens).decode("utf-8",'ignore')
-        print(mens)
-        #mens=mens[2:-1] #to discard \x00\x00 and \x00 at the end
-        #print(mens, payload)
         cipher = AES.new(self.key)
         decoded = cipher.decrypt(base64.b64decode(mens))
-        print ("Decoded: ")
-        print(decoded)
-        print ("FINAL: ")
+        print ("== RECEIVE: ", mens, "  |  Decoded: ",decoded )
         print(bytes(decoded).decode("utf-8",'ignore'))
         
         BOARD.led_off()
         time.sleep(1) # Wait for the client be ready
-        print ("Send: ACK")
         
         msg_text = 'ACK             '
         cipher = AES.new(self.key)
         encoded = base64.b64encode(cipher.encrypt(msg_text))
-        print ("Encoded: ")
-        print(encoded)
         lista=list(encoded)
         lista.insert(0,0)
         lista.insert(0,0)
@@ -78,9 +66,9 @@ class mylora(LoRa):
         lista.insert(0,255)
         lista.append(0)
         self.write_payload(lista)
-        
         #self.write_payload([255, 255, 0, 0, 65, 67, 75, 0]) # Send ACK
         self.set_mode(MODE.TX)
+        print ("== SEND: ACK                |  Encoded: ", encoded)
         self.var=1
 
     def on_tx_done(self):
@@ -110,12 +98,9 @@ class mylora(LoRa):
     def start(self):          
         while True:
             while (self.var==0):
-                print ("Send: INF")
                 msg_text = 'INF             '
                 cipher = AES.new(self.key)
                 encoded = base64.b64encode(cipher.encrypt(msg_text))
-                print ("Encoded: ")
-                print(encoded)
                 lista=list(encoded)
                 lista.insert(0,0)
                 lista.insert(0,0)
@@ -125,6 +110,7 @@ class mylora(LoRa):
                 self.write_payload(lista)
                 #self.write_payload([255, 255, 0, 0, 57, 90, 54, 118, 106, 71, 75, 51, 87, 75, 107, 79, 99, 55, 76, 122, 112, 65, 86, 88, 79, 81, 61, 61, 0]) # Send INF
                 self.set_mode(MODE.TX)
+                print ("== SEND: INF                |  Encoded: ", encoded)
                 time.sleep(.5) # there must be a better solution but sleep() works
                 self.reset_ptr_rx()
                 self.set_mode(MODE.RXCONT) # Receiver mode
