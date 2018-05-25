@@ -49,14 +49,15 @@ class mylora(LoRa):
         mens=payload[4:-1] #to discard \xff\xff\x00\x00 and \x00 at the end
         mens=bytes(mens).decode("utf-8",'ignore')
         cipher = AES.new(self.key)
-        decoded = cipher.decrypt(base64.b64decode(mens))
+        decodemens=base64.b64decode(mens)[:-1]
+        decoded = cipher.decrypt(decodemens)
         decoded = bytes(decoded).decode("utf-8",'ignore')
         print ("== RECEIVE: ", mens, "  |  Decoded: ",decoded )
         
         BOARD.led_off()
         time.sleep(1) # Wait for the client be ready
         
-        msg_text = 'ACK             '
+        msg_text = 'ACK             ' # 16 char
         cipher = AES.new(self.key)
         encoded = base64.b64encode(cipher.encrypt(msg_text))
         lista=list(encoded)
@@ -68,7 +69,7 @@ class mylora(LoRa):
         self.write_payload(lista)
         #self.write_payload([255, 255, 0, 0, 65, 67, 75, 0]) # Send ACK
         self.set_mode(MODE.TX)
-        print ("== SEND: ACK                |  Encoded: ", encoded)
+        print ("== SEND: ACK                |  Encoded: ", encoded.decode("utf-8",'ignore'))
         self.var=1
 
     def on_tx_done(self):
