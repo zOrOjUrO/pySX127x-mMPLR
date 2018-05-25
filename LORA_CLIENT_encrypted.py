@@ -55,7 +55,7 @@ class mylora(LoRa):
         
         
         BOARD.led_off()
-        if mens=="INF             ":
+        if decoded=="INF             ":
             print("Received data request INF - going to send mens:DATA RASPI      ")
             time.sleep(2)
 
@@ -71,7 +71,10 @@ class mylora(LoRa):
             self.write_payload(lista)
             #self.write_payload([255, 255, 0, 0, 68, 65, 84, 65, 32, 82, 65, 83, 80, 66, 69, 82, 82, 89, 32, 80, 73, 0]) # Send DATA RASPBERRY PI
             self.set_mode(MODE.TX)
-            print ("== SEND: DATA RASPI        |  Encoded: ", encoded)
+            print ("== SEND: DATA RASPI        |  Encoded: ", encoded.decode("utf-8",'ignore'))
+        if decoded=="ACK             ":
+            print("\n")
+            
         time.sleep(.5)
         self.reset_ptr_rx()
         self.set_mode(MODE.RXCONT)
