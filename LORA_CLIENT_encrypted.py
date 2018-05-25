@@ -21,10 +21,11 @@
 # You should have received a copy of the GNU General Public License along with pySX127.  If not, see
 # <http://www.gnu.org/licenses/>.
 
-import time
+import time, base64
 from SX127x.LoRa import *
 from SX127x.LoRaArgumentParser import LoRaArgumentParser
 from SX127x.board_config import BOARD
+from Crypto.Cipher import AES
 
 BOARD.setup()
 BOARD.reset()
@@ -36,23 +37,40 @@ class mylora(LoRa):
         super(mylora, self).__init__(verbose)
         self.set_mode(MODE.SLEEP)
         self.set_dio_mapping([0] * 6)
+        self.key = '1234567890123456'
 
     def on_rx_done(self):
         BOARD.led_on()
         #print("\nRxDone")
         self.clear_irq_flags(RxDone=1)
-        payload = self.read_payload(nocheck=True )# Receive INF
-        print ("Receive: ")
-        mens=bytes(payload).decode("utf-8",'ignore')
-        mens=mens[2:-1] #to discard \x00\x00 and \x00 at the end
-        print(mens)
+        payload = self.read_payload(nocheck=True )
+        
+        mens=payload[4:-1] #to discard \xff\xff\x00\x00 and \x00 at the end
+        mens=bytes(mens).decode("utf-8",'ignore')
+        cipher = AES.new(self.key)
+        decoded = cipher.decrypt(base64.b64decode(mens))
+        decoded = bytes(decoded).decode("utf-8",'ignore')
+        print ("== RECEIVE: ", mens, "  |  Decoded: ",decoded )
+        
+        
         BOARD.led_off()
-        if mens=="INF":
-            print("Received data request INF")
+        if mens=="INF             ":
+            print("Received data request INF - going to send mens:DATA RASPBERRY PI")
             time.sleep(2)
-            print ("Send mens: DATA RASPBERRY PI")
-            self.write_payload([255, 255, 0, 0, 68, 65, 84, 65, 32, 82, 65, 83, 80, 66, 69, 82, 82, 89, 32, 80, 73, 0]) # Send DATA RASPBERRY PI
+
+            msg_text = 'DATA RASPI      ' # 16 char
+            cipher = AES.new(self.key)
+            encoded = base64.b64encode(cipher.encrypt(msg_text))
+            lista=list(encoded)
+            lista.insert(0,0)
+            lista.insert(0,0)
+            lista.insert(0,255)
+            lista.insert(0,255)
+            lista.append(0)
+            self.write_payload(lista)
+            #self.write_payload([255, 255, 0, 0, 68, 65, 84, 65, 32, 82, 65, 83, 80, 66, 69, 82, 82, 89, 32, 80, 73, 0]) # Send DATA RASPBERRY PI
             self.set_mode(MODE.TX)
+            print ("== SEND: DATA RASPI        |  Encoded: ", encoded)
         time.sleep(.5)
         self.reset_ptr_rx()
         self.set_mode(MODE.RXCONT)
