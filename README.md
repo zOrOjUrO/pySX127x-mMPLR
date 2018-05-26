@@ -1,7 +1,9 @@
 # This fork
-This fork is an adaptation of the original mayeranalytic configured to work with Ai-Thinker Ra-02 Modules This module uses SX1278 IC and works on a 433MHz frequency. The examples in this library LORA_SERVER.py and LORA_CLIENT.py can be used to communicate with the Arduino through the RADIOHEAD library, for more information see these examples -> [rpsreal/LoRa_Ra-02_Arduino](https://github.com/rpsreal/LoRa_Ra-02_Arduino).
+This fork is an adaptation of the original mayeranalytic configured to work with Ai-Thinker Ra-02 Modules This module uses SX1278 IC and works on a 433MHz frequency. The examples in this library LORA_SERVER.py and LORA_CLIENT.py can be used to communicate with the Arduino through the RADIOHEAD library, for more information see these examples -> [rpsreal/LoRa_Ra-02_Arduino](https://github.com/rpsreal/LoRa_Ra-02_Arduino). 
+Update 05/2018 - Added encrypted versions 
+For security reasons it is advisable to use the encrypted versions that use Advanced Encryption Standard (AES). You can also use them to communicate with the Arduino.
 
-Easy setup:
+### Easy setup:
 ```bash
 sudo raspi-config
 -- Interfacing Options
@@ -12,6 +14,12 @@ sudo apt-get install python-rpi.gpio python3-rpi.gpio
 sudo apt-get install python-spidev python3-spidev
 sudo git clone https://github.com/rpsreal/pySX127x
 ```
+For encrypted versions it is necessary to perform the following installation step:
+```bash
+pip install pycryptodome
+```
+
+### Hardware
 Make the connections as shown below
 
 | Ra-02 LoRa pin  | RaspPi GPIO |
@@ -29,6 +37,7 @@ Make the connections as shown below
 
 LED external with 1k ohm or 330ohm (optional)
 
+### Use
 Now you can start LORA_SERVER.py or LORA_CLIENT.py
 To work, there must be another LORA_SERVER or LORA_CLIENT running on another device (Raspberry Pi or Arduino)
 
@@ -38,6 +47,7 @@ cd pySX127x
 python3 ./LORA_SERVER.py
 ```
 
+### Extra
 If it is necessary to run the library from anywhere:
 ```bash
 nano ~/.bashrc
@@ -50,15 +60,9 @@ And then:
 source ~/.bashrc
 ```
 
-Update 05/2018 - Added encrypted versions
-For security reasons it is advisable to use the encrypted versions that use Advanced Encryption Standard (AES).
-The installation is performed in the same way as the non-encrypted versions but it is necessary to perform the following installation step:
-```bash
-pip install pycryptodome
-```
-
-
 Developed by Rui Silva, Porto, Portugal
+
+
 
 # Forked from mayeranalytics/pySX127x
 # Overview
