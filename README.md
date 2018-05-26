@@ -50,6 +50,13 @@ And then:
 source ~/.bashrc
 ```
 
+Update 05/2018 - Added encrypted versions
+For security reasons it is advisable to use the encrypted versions that use Advanced Encryption Standard (AES).
+The installation is performed in the same way as the non-encrypted versions but it is necessary to perform the following installation step:
+```bash
+pip install pycryptodome
+```
+
 
 Developed by Rui Silva, Porto, Portugal
 
