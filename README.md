@@ -1,7 +1,8 @@
 # This fork
 This fork is an adaptation of the original mayeranalytic configured to work with Ai-Thinker Ra-02 Modules This module uses SX1278 IC and works on a 433MHz frequency. The examples in this library LORA_SERVER and LORA_CLIENT can be used to communicate with the Arduino through the RADIOHEAD library, for more information see these examples -> [rpsreal/LoRa_Ra-02_Arduino](https://github.com/rpsreal/LoRa_Ra-02_Arduino). 
+
 **Update 05/2018 - Added encrypted versions** 
-For security reasons it is advisable to use the encrypted versions that use Advanced Encryption Standard (AES). You can also use them to communicate with the Arduino.
+For security reasons it is advisable to use the encrypted versions that use [Advanced Encryption Standard](https://en.wikipedia.org/wiki/Advanced_Encryption_Standard) (AES). You can also use them to communicate with the Arduino.
 
 ### Easy setup:
 ```bash
