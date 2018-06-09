@@ -5,7 +5,7 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name="pyLoRa",
-    version="0.0.6",
+    version="0.1.5",
     author="Rui Silva",
     author_email="ruisilva.real@sapo.pt",
     description="This is a python interface to the Ai-Thinker Ra-02 Modules LoRa long range, low power transceiver family. This module uses SX1278 IC and works on a 433MHz frequency.",
