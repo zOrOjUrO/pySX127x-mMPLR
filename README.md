@@ -4,25 +4,38 @@ This fork is an adaptation of the original mayeranalytic configured to work with
 **Update 05/2018 - Added encrypted versions** 
 For security reasons it is advisable to use the encrypted versions that use [Advanced Encryption Standard](https://en.wikipedia.org/wiki/Advanced_Encryption_Standard) (AES). You can also use them to communicate with the Arduino.
 
-### Easy setup:
+It supports Python 3 or newer and PyPy.
+
+### Easy setup on Raspberry Pi:
 ```bash
 sudo raspi-config
 -- Interfacing Options
 --- enable SPI
 sudo apt-get install python-dev python3-dev
+```
+For **Use with git** perform the following installation steps:
+```bash
 sudo apt-get install python-rpi.gpio python3-rpi.gpio
 sudo apt-get install python-spidev python3-spidev
 sudo apt-get install git
 sudo git clone https://github.com/rpsreal/pySX127x
 ```
-For **encrypted versions only** it is necessary to perform the following installation step:
+For **Install with pip** (recommended) perform the following installation steps:
 ```bash
 sudo apt-get install python-pip python3-pip
+pip install RPi.GPIO
+pip install spidev
+pip install pyLoRa-pkg
+```
+
+For **encrypted versions only** it is necessary to perform the following installation step:
+```bash
 pip install pycryptodome
 ```
 
 ### Hardware
 Make the connections as shown below
+
 
 | Ra-02 LoRa pin  | RaspPi GPIO |
 |:----------------|:-----------:|
