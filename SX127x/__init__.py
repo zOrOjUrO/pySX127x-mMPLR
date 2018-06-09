@@ -1,1 +1,2 @@
-__all__ = ['SX127x']
+name = "pyLoRa_pkg"
+#__all__ = ['SX127x']
