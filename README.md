@@ -28,7 +28,9 @@ For **encrypted versions only** it is necessary to perform the following install
 pip install pycryptodome
 ```
 
-If necessary **Download library and example files**:
+
+If you do not need to install the library you can use it simply in the same directory.
+To **Download library and example files**:
 ```bash
 sudo apt-get install python-rpi.gpio python3-rpi.gpio
 sudo apt-get install python-spidev python3-spidev
@@ -57,7 +59,8 @@ If it is necessary to change edit the file board_config.py
 LED external with 1k ohm or 330ohm (optional)
 
 ### How to Use
-Now you can start LORA_SERVER or LORA_CLIENT (encrypted or non-encripted).
+View the sample files. 
+If you downloaded the library and sample files, now you can start LORA_SERVER or LORA_CLIENT (encrypted or non-encripted).
 To work, there must be another LORA_SERVER or LORA_CLIENT running on another device (Raspberry Pi or Arduino)
 
 For example, if you are running on an [Arduino the LORA_CLIENT](https://github.com/rpsreal/LoRa_Ra-02_Arduino/blob/master/LORA_CLIENT.ino) then start the [LORA_SERVER.py on Raspberry Pi](https://github.com/rpsreal/pySX127x/blob/master/LORA_SERVER.py) like this:
