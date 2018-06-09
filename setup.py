@@ -4,7 +4,7 @@ with open("README.md", "r") as fh:
     long_description = fh.read()
 
 setuptools.setup(
-    name="pyLoRa_pkg",
+    name="pyLoRa",
     version="0.0.6",
     author="Rui Silva",
     author_email="ruisilva.real@sapo.pt",
