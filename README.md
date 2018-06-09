@@ -4,7 +4,7 @@ This fork is an adaptation of the original mayeranalytic configured to work with
 **Update 05/2018 - Added encrypted versions** 
 For security reasons it is advisable to use the encrypted versions that use [Advanced Encryption Standard](https://en.wikipedia.org/wiki/Advanced_Encryption_Standard) (AES). You can also use them to communicate with the Arduino.
 
-It supports Python 3 or newer and PyPy.
+It supports Python 3 or newer and PyPy. https://pypi.org/project/pyLoRa-pkg/
 
 ## Easy setup on Raspberry Pi:
 ```bash
