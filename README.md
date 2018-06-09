@@ -6,21 +6,16 @@ For security reasons it is advisable to use the encrypted versions that use [Adv
 
 It supports Python 3 or newer and PyPy.
 
-### Easy setup on Raspberry Pi:
+## Easy setup on Raspberry Pi:
 ```bash
 sudo raspi-config
 -- Interfacing Options
 --- enable SPI
 sudo apt-get install python-dev python3-dev
 ```
-For **Use with git** perform the following installation steps:
-```bash
-sudo apt-get install python-rpi.gpio python3-rpi.gpio
-sudo apt-get install python-spidev python3-spidev
-sudo apt-get install git
-sudo git clone https://github.com/rpsreal/pySX127x
-```
-For **Install with pip** (recommended) perform the following installation steps:
+
+### Installation:
+For **Install with pip** perform the following installation steps:
 ```bash
 sudo apt-get install python-pip python3-pip
 pip install RPi.GPIO
@@ -33,9 +28,18 @@ For **encrypted versions only** it is necessary to perform the following install
 pip install pycryptodome
 ```
 
-### Hardware
-Make the connections as shown below
+If necessary **Download library and example files**:
+```bash
+sudo apt-get install python-rpi.gpio python3-rpi.gpio
+sudo apt-get install python-spidev python3-spidev
+sudo apt-get install git
+sudo git clone https://github.com/rpsreal/pySX127x
+```
 
+
+### Hardware
+Make the connections as shown below.
+If it is necessary to change edit the file board_config.py
 
 | Ra-02 LoRa pin  | RaspPi GPIO |
 |:----------------|:-----------:|
@@ -52,7 +56,7 @@ Make the connections as shown below
 
 LED external with 1k ohm or 330ohm (optional)
 
-### Use
+### How to Use
 Now you can start LORA_SERVER or LORA_CLIENT (encrypted or non-encripted).
 To work, there must be another LORA_SERVER or LORA_CLIENT running on another device (Raspberry Pi or Arduino)
 
@@ -62,7 +66,7 @@ cd pySX127x
 python3 ./LORA_SERVER.py
 ```
 
-### Extra
+### Extra (no need if the library was installed)
 If it is necessary to run the library from anywhere:
 ```bash
 nano ~/.bashrc
