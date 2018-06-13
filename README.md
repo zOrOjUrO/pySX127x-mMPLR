@@ -25,7 +25,7 @@ pip install pyLoRa
 
 For **encrypted versions only** it is necessary to perform the following installation step:
 ```bash
-pip install pycryptodome
+pip install pycrypto
 ```
 
 
