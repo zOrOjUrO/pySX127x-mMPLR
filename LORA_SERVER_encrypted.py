@@ -69,7 +69,7 @@ class mylora(LoRa):
         self.write_payload(lista)
         #self.write_payload([255, 255, 0, 0, 65, 67, 75, 0]) # Send ACK
         self.set_mode(MODE.TX)
-        print ("== SEND: ACK                |  Encoded: ", encoded.decode("utf-8",'ignore'))
+        print ("== SEND: ", msg_text, "  |  Encoded: ", encoded.decode("utf-8",'ignore'))
         print ("\n")
         self.var=1
 
