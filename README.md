@@ -20,12 +20,12 @@ For **Install with pip** perform the following installation steps:
 sudo apt-get install python-pip python3-pip
 pip install RPi.GPIO
 pip install spidev
-pip install pyLoRa-pkg
+pip install pyLoRa
 ```
 
 For **encrypted versions only** it is necessary to perform the following installation step:
 ```bash
-pip install pycryptodome
+pip install pycrypto
 ```
 
 
