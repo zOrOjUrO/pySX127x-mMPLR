@@ -26,16 +26,7 @@ pip install pyLoRa
 For **encrypted versions only** it is necessary to perform the following installation step:
 ```bash
 pip install pycrypto
-```
-
-
-If you do not need to install the library you can use it simply in the same directory.
-To **Download library and example files**:
-```bash
-sudo apt-get install python-rpi.gpio python3-rpi.gpio
-sudo apt-get install python-spidev python3-spidev
-sudo apt-get install git
-sudo git clone https://github.com/rpsreal/pySX127x
+pip install pycryptodome
 ```
 
 
@@ -69,7 +60,16 @@ cd pySX127x
 python3 ./LORA_SERVER.py
 ```
 
-### Extra (no need if the library was installed)
+### Extra 
+If you do not need to install the library you can use it simply in the same directory.
+To **Download library and example files**:
+```bash
+sudo apt-get install python-rpi.gpio python3-rpi.gpio
+sudo apt-get install python-spidev python3-spidev
+sudo apt-get install git
+sudo git clone https://github.com/rpsreal/pySX127x
+```
+
 If it is necessary to run the library from anywhere:
 ```bash
 nano ~/.bashrc
