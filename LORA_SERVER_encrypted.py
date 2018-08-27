@@ -23,14 +23,14 @@
 
 import time, base64
 from SX127x.LoRa import *
-from SX127x.LoRaArgumentParser import LoRaArgumentParser
+#from SX127x.LoRaArgumentParser import LoRaArgumentParser
 from SX127x.board_config import BOARD
 from Crypto.Cipher import AES
 
 
 BOARD.setup()
 BOARD.reset()
-parser = LoRaArgumentParser("Lora tester")
+#parser = LoRaArgumentParser("Lora tester")
 
 
 class mylora(LoRa):
@@ -55,7 +55,7 @@ class mylora(LoRa):
         print ("== RECEIVE: ", mens, "  |  Decoded: ",decoded )
         
         BOARD.led_off()
-        time.sleep(1) # Wait for the client be ready
+        time.sleep(2) # Wait for the client be ready
         
         msg_text = 'ACK             ' # 16 char
         cipher = AES.new(self.key)
@@ -113,7 +113,7 @@ class mylora(LoRa):
                 #self.write_payload([255, 255, 0, 0, 57, 90, 54, 118, 106, 71, 75, 51, 87, 75, 107, 79, 99, 55, 76, 122, 112, 65, 86, 88, 79, 81, 61, 61, 0]) # Send INF
                 self.set_mode(MODE.TX)
                 print ("== SEND: INF                |  Encoded: ", encoded)
-                time.sleep(.5) # there must be a better solution but sleep() works
+                time.sleep(3) # there must be a better solution but sleep() works
                 self.reset_ptr_rx()
                 self.set_mode(MODE.RXCONT) # Receiver mode
             
@@ -127,10 +127,20 @@ class mylora(LoRa):
             time.sleep(10)
 
 lora = mylora(verbose=False)
-args = parser.parse_args(lora) # configs in LoRaArgumentParser.py
+#args = parser.parse_args(lora) # configs in LoRaArgumentParser.py
 
-#lora.set_mode(MODE.STDBY)
-lora.set_pa_config(pa_select=1)
+#     Slow+long range  Bw = 125 kHz, Cr = 4/8, Sf = 4096chips/symbol, CRC on. 13 dBm
+lora.set_pa_config(pa_select=1, max_power=21, output_power=15)
+lora.set_bw(BW.BW125)
+lora.set_coding_rate(CODING_RATE.CR4_8)
+lora.set_spreading_factor(12)
+lora.set_rx_crc(True)
+#lora.set_lna_gain(GAIN.G1)
+#lora.set_implicit_header_mode(False)
+lora.set_low_data_rate_optim(True)
+
+#  Medium Range  Defaults after init are 434.0MHz, Bw = 125 kHz, Cr = 4/5, Sf = 128chips/symbol, CRC on 13 dBm
+#lora.set_pa_config(pa_select=1)
 
 
 assert(lora.get_agc_auto_on() == 1)
