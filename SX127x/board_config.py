@@ -1,9 +1,9 @@
 """ Defines the BOARD class that contains the board pin mappings and RF module HF/LF info. """
 # -*- coding: utf-8 -*-
 
-# Copyright 2015-2018 Mayer Analytics Ltd.
+# Copyright 2015-2018 Mayer Analytics Ltd. and Rui Silva
 #
-# This file is part of pySX127x.
+# This file is part of rpsreal/pySX127x.
 #
 # pySX127x is free software: you can redistribute it and/or modify it under the terms of the GNU Affero General Public
 # License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
@@ -151,7 +151,7 @@ class BOARD:
         
         
         
-        
+# BOARD2 configuration here -----------------------------------------------------------------------------
 class BOARD2:
     """ Board2 initialisation/teardown and pin configuration is kept here.
         Also, information about the RF module is kept here.
