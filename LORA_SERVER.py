@@ -23,12 +23,12 @@
 
 import time
 from SX127x.LoRa import *
-from SX127x.LoRaArgumentParser import LoRaArgumentParser
+#from SX127x.LoRaArgumentParser import LoRaArgumentParser
 from SX127x.board_config import BOARD
 
 BOARD.setup()
 BOARD.reset()
-parser = LoRaArgumentParser("Lora tester")
+#parser = LoRaArgumentParser("Lora tester")
 
 
 class mylora(LoRa):
@@ -46,7 +46,7 @@ class mylora(LoRa):
         print ("Receive: ")
         print(bytes(payload).decode("utf-8",'ignore')) # Receive DATA
         BOARD.led_off()
-        time.sleep(1) # Wait for the client be ready
+        time.sleep(2) # Wait for the client be ready
         print ("Send: ACK")
         self.write_payload([255, 255, 0, 0, 65, 67, 75, 0]) # Send ACK
         self.set_mode(MODE.TX)
@@ -82,7 +82,7 @@ class mylora(LoRa):
                 print ("Send: INF")
                 self.write_payload([255, 255, 0, 0, 73, 78, 70, 0]) # Send INF
                 self.set_mode(MODE.TX)
-                time.sleep(.5) # there must be a better solution but sleep() works
+                time.sleep(3) # there must be a better solution but sleep() works
                 self.reset_ptr_rx()
                 self.set_mode(MODE.RXCONT) # Receiver mode
             
@@ -96,7 +96,7 @@ class mylora(LoRa):
             time.sleep(10)
 
 lora = mylora(verbose=False)
-args = parser.parse_args(lora) # configs in LoRaArgumentParser.py
+#args = parser.parse_args(lora) # configs in LoRaArgumentParser.py
 
 #lora.set_mode(MODE.STDBY)
 lora.set_pa_config(pa_select=1)
