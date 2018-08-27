@@ -23,13 +23,13 @@
 
 import time, base64
 from SX127x.LoRa import *
-from SX127x.LoRaArgumentParser import LoRaArgumentParser
+#from SX127x.LoRaArgumentParser import LoRaArgumentParser
 from SX127x.board_config import BOARD
 from Crypto.Cipher import AES
 
 BOARD.setup()
 BOARD.reset()
-parser = LoRaArgumentParser("Lora tester")
+#parser = LoRaArgumentParser("Lora tester")
 
 
 class mylora(LoRa):
@@ -75,7 +75,7 @@ class mylora(LoRa):
         if decoded=="ACK             ":
             print("\n")
             
-        time.sleep(.5)
+        time.sleep(2)
         self.reset_ptr_rx()
         self.set_mode(MODE.RXCONT)
 
@@ -112,10 +112,20 @@ class mylora(LoRa):
             
 
 lora = mylora(verbose=False)
-args = parser.parse_args(lora) # configs in LoRaArgumentParser.py
+#args = parser.parse_args(lora) # configs in LoRaArgumentParser.py
 
-#lora.set_mode(MODE.STDBY)
-lora.set_pa_config(pa_select=1)
+#     Slow+long range  Bw = 125 kHz, Cr = 4/8, Sf = 4096chips/symbol, CRC on. Power 13 dBm
+lora.set_pa_config(pa_select=1, max_power=21, output_power=15)
+lora.set_bw(BW.BW125)
+lora.set_coding_rate(CODING_RATE.CR4_8)
+lora.set_spreading_factor(12)
+lora.set_rx_crc(True)
+#lora.set_lna_gain(GAIN.G1)
+#lora.set_implicit_header_mode(False)
+lora.set_low_data_rate_optim(True)
+
+#  Medium Range  Defaults after init are 434.0MHz, Bw = 125 kHz, Cr = 4/5, Sf = 128chips/symbol, CRC on Power 13 dBm
+#lora.set_pa_config(pa_select=1)
 
 
 assert(lora.get_agc_auto_on() == 1)
