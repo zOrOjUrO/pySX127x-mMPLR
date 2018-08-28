@@ -23,7 +23,7 @@
 
 import sys
 from .constants import *
-from .board_config import BOARD
+from .board_config import BOARD, BOARD2
 
 
 ################################################## Some utility functions ##############################################
