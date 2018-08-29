@@ -21,16 +21,20 @@
 # You should have received a copy of the GNU General Public License along with pySX127.  If not, see
 # <http://www.gnu.org/licenses/>.
 
-import time, base64
-from SX127x.LoRa import *
-#from SX127x.LoRaArgumentParser import LoRaArgumentParser
-from SX127x.board_config import BOARD
+import time, base64, sys
 from Crypto.Cipher import AES
+from SX127x.constants import add_lookup, MODE, BW, CODING_RATE, GAIN, PA_SELECT, PA_RAMP, MASK, REG
+from SX127x.LoRa import set_bit, getter, setter
 
+# Use BOARD 1
+from SX127x.LoRa import LoRa
+from SX127x.board_config import BOARD
+# Use BOARD 2 (you can use BOARD1 and BOARD2 at the same time)
+#from SX127x.LoRa import LoRa2 as LoRa
+#from SX127x.board_config import BOARD2 as BOARD
 
 BOARD.setup()
 BOARD.reset()
-#parser = LoRaArgumentParser("Lora tester")
 
 
 class mylora(LoRa):
@@ -127,7 +131,6 @@ class mylora(LoRa):
             time.sleep(10)
 
 lora = mylora(verbose=False)
-#args = parser.parse_args(lora) # configs in LoRaArgumentParser.py
 
 #     Slow+long range  Bw = 125 kHz, Cr = 4/8, Sf = 4096chips/symbol, CRC on. 13 dBm
 lora.set_pa_config(pa_select=1, max_power=21, output_power=15)
