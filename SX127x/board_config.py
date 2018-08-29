@@ -77,13 +77,15 @@ class BOARD:
         BOARD.spi.close()
 
     @staticmethod
-    def SpiDev(spi_bus=BOARD.SPI_BUS, spi_cs=BOARD.SPI_CS):
+    def SpiDev():
         """ Init and return the SpiDev object
         :return: SpiDev object
         :param spi_bus: The RPi SPI bus to use: 0 or 1
         :param spi_cs: The RPi SPI chip select to use: 0 or 1
         :rtype: SpiDev
         """
+        spi_bus=BOARD.SPI_BUS
+        spi_cs=BOARD.SPI_CS
         BOARD.spi = spidev.SpiDev()
         BOARD.spi.open(spi_bus, spi_cs)
         BOARD.spi.max_speed_hz = 5000000    # SX127x can go up to 10MHz, pick half that to be safe
@@ -204,13 +206,15 @@ class BOARD2:
         BOARD2.spi.close()
 
     @staticmethod
-    def SpiDev(spi_bus=BOARD2.SPI_BUS, spi_cs=BOARD2.SPI_CS):
+    def SpiDev():
         """ Init and return the SpiDev object
         :return: SpiDev object
         :param spi_bus: The RPi SPI bus to use: 0 or 1
         :param spi_cs: The RPi SPI chip select to use: 0 or 1
         :rtype: SpiDev
         """
+        spi_bus=BOARD2.SPI_BUS
+        spi_cs=BOARD2.SPI_CS
         BOARD2.spi = spidev.SpiDev()
         BOARD2.spi.open(spi_bus, spi_cs)
         BOARD2.spi.max_speed_hz = 5000000    # SX127x can go up to 10MHz, pick half that to be safe
