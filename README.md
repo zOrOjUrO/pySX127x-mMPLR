@@ -46,7 +46,8 @@ pip install pycrypto
 Make the connections as shown below.
 If it is necessary to change edit the file board_config.py
 
-| Ra-02 LoRa pin  | RaspPi GPIO |
+| Ra-02 LoRa pin  |    RaspPi   || Ra-02 LoRa pin  |    RaspPi   |
+|     BOARD 1     |     GPIO    |
 |:----------------|:-----------:|
 |       MOSI      | GPIO 10     |
 |       MISO      | GPIO 9      |
