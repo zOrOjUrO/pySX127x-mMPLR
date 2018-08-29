@@ -43,6 +43,8 @@ class BOARD:
 
     # The spi object is kept here
     spi = None
+    SPI_BUS=0
+    SPI_CS=1
     
     # tell pySX127x here whether the attached RF module uses low-band (RF*_LF pins) or high-band (RF*_HF pins).
     # low band (called band 1&2) are 137-175 and 410-525
@@ -75,7 +77,7 @@ class BOARD:
         BOARD.spi.close()
 
     @staticmethod
-    def SpiDev(spi_bus=0, spi_cs=1):
+    def SpiDev(spi_bus=BOARD.SPI_BUS, spi_cs=BOARD.SPI_CS):
         """ Init and return the SpiDev object
         :return: SpiDev object
         :param spi_bus: The RPi SPI bus to use: 0 or 1
@@ -168,6 +170,8 @@ class BOARD2:
 
     # The spi object is kept here
     spi = None
+    SPI_BUS=0
+    SPI_CS=0
     
     # tell pySX127x here whether the attached RF module uses low-band (RF*_LF pins) or high-band (RF*_HF pins).
     # low band (called band 1&2) are 137-175 and 410-525
@@ -200,7 +204,7 @@ class BOARD2:
         BOARD2.spi.close()
 
     @staticmethod
-    def SpiDev(spi_bus=0, spi_cs=1):
+    def SpiDev(spi_bus=BOARD2.SPI_BUS, spi_cs=BOARD2.SPI_CS):
         """ Init and return the SpiDev object
         :return: SpiDev object
         :param spi_bus: The RPi SPI bus to use: 0 or 1
