@@ -160,12 +160,12 @@ class BOARD2:
         This is the Raspberry Pi board with one LED and a Ra-02 Lora.
     """
     # Note that the BCOM numbering for the GPIOs is used.
-    DIO0 = 25   # RaspPi GPIO 25
-    DIO1 = 24   # RaspPi GPIO 24
-    DIO2 = 23   # RaspPi GPIO 23
-    DIO3 = 18   # RaspPi GPIO 18
-    RST  = 22   # RaspPi GPIO 22
-    LED  = 27   # RaspPi GPIO 27 connects to the LED and a resistor (1kohm or 330ohm)
+    DIO0 = 2   # RaspPi GPIO 2
+    DIO1 = 3   # RaspPi GPIO 3                                                                                         
+    DIO2 = 14   # RaspPi GPIO 24
+    DIO3 = 15   # RaspPi GPIO 15
+    RST  = 4   # RaspPi GPIO 4
+    LED  = 17   # RaspPi GPIO 17 connects to the LED and a resistor (1kohm or 330ohm)
     #SWITCH = 4  # RaspPi GPIO 4 connects to a switch - not necessary
 
     # The spi object is kept here
