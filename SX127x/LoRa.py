@@ -965,7 +965,7 @@ class LoRa(object):
 ############################################### Definition of the LoRa2 class ###########################################
 ###############################################         For BOARD 2           ###########################################
 
-class LoRa(object):
+class LoRa2(object):
 
     spi = BOARD2.SpiDev()              # init and get the baord's SPI
     mode = None                       # the mode is backed up here
