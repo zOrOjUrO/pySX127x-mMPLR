@@ -63,7 +63,7 @@ class mylora(LoRa):
         BOARD.led_off()
         if decoded=="INF             ":
             print("Received data request INF - going to send mens:DATA RASPI      ")
-            time.sleep(2)
+            time.sleep(4)
 
             msg_text = 'DATA RASPI      ' # 16 char
             cipher = AES.new(self.key)
@@ -81,7 +81,7 @@ class mylora(LoRa):
         if decoded=="ACK             ":
             print("\n")
             
-        time.sleep(2)
+        time.sleep(3)
         self.reset_ptr_rx()
         self.set_mode(MODE.RXCONT)
 
