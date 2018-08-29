@@ -46,19 +46,19 @@ pip install pycrypto
 Make the connections as shown below.
 If it is necessary to change edit the file board_config.py
 
-| Ra-02 LoRa pin  |    RaspPi   || Ra-02 LoRa pin  |    RaspPi   |
-|     BOARD 1     |     GPIO    |
-|:----------------|:-----------:|
-|       MOSI      | GPIO 10     |
-|       MISO      | GPIO 9      |
-|    SCK (SCLK)   | GPIO 11     |
-|       NSS       | GPIO 7 (CE1)|
-|    DIO0 (IRQ)   | GPIO 25     |
-|       DIO1      | GPIO 24     |
-|       DIO2      | GPIO 23     |
-|       DIO3      | GPIO 18     |
-|    RST (Reset)  | GPIO 22     |
-|       LED       | GPIO 27     |
+| Ra-02 LoRa pin  |    RaspPi   | Ra-02 LoRa pin  |    RaspPi   |
+|     BOARD 1     |     GPIO    |     BOARD 1     |     GPIO    |
+|:----------------|:------------|:----------------|:-----------:|
+|       MOSI      | GPIO 10     |       MOSI      | GPIO 10     |
+|       MISO      | GPIO 9      |       MISO      | GPIO 9      |
+|    SCK (SCLK)   | GPIO 11     |    SCK (SCLK)   | GPIO 11     |
+|       NSS       | GPIO 7 (CE1)|    SCK (SCLK)   | GPIO 11     |
+|    DIO0 (IRQ)   | GPIO 25     |    SCK (SCLK)   | GPIO 11     |
+|       DIO1      | GPIO 24     |    SCK (SCLK)   | GPIO 11     |
+|       DIO2      | GPIO 23     |    SCK (SCLK)   | GPIO 11     |
+|       DIO3      | GPIO 18     |    SCK (SCLK)   | GPIO 11     |
+|    RST (Reset)  | GPIO 22     |    SCK (SCLK)   | GPIO 11     |
+|       LED       | GPIO 27     |    SCK (SCLK)   | GPIO 11     |
 
 LED external with 1k ohm or 330ohm (optional)
 
