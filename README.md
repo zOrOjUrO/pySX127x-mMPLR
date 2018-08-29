@@ -46,19 +46,18 @@ pip install pycrypto
 Make the connections as shown below.
 If it is necessary to change edit the file board_config.py
 
-
-|     BOARD 1     |     GPIO    |     BOARD 1     |     GPIO    |
-|:----------------|:------------|:----------------|:-----------:|
-|       MOSI      | GPIO 10     |       MOSI      | GPIO 10     |
-|       MISO      | GPIO 9      |       MISO      | GPIO 9      |
-|    SCK (SCLK)   | GPIO 11     |    SCK (SCLK)   | GPIO 11     |
-|       NSS       | GPIO 7 (CE1)|    SCK (SCLK)   | GPIO 11     |
-|    DIO0 (IRQ)   | GPIO 25     |    SCK (SCLK)   | GPIO 11     |
-|       DIO1      | GPIO 24     |    SCK (SCLK)   | GPIO 11     |
-|       DIO2      | GPIO 23     |    SCK (SCLK)   | GPIO 11     |
-|       DIO3      | GPIO 18     |    SCK (SCLK)   | GPIO 11     |
-|    RST (Reset)  | GPIO 22     |    SCK (SCLK)   | GPIO 11     |
-|       LED       | GPIO 27     |    SCK (SCLK)   | GPIO 11     |
+| Ra-02 LoRa BOARD1 |  RaspPi GPIO  | Ra-02 LoRa BOARD2 |  RaspPi GPIO  |
+|:------------------|:--------------|:------------------|:-------------:|
+|        MOSI       | GPIO 10       |        MOSI       | GPIO 10     |
+|        MISO       | GPIO 9        |        MISO       | GPIO 9      |
+|     SCK (SCLK)    | GPIO 11       |     SCK (SCLK)    | GPIO 11     |
+|        NSS        | GPIO 7 (CE1)  |        NSS        | GPIO 11     |
+|     DIO0 (IRQ)    | GPIO 25       |     DIO0 (IRQ)    | GPIO 11     |
+|        DIO1       | GPIO 24       |        DIO1       | GPIO 11     |
+|        DIO2       | GPIO 23       |        DIO2       | GPIO 11     |
+|        DIO3       | GPIO 18       |        DIO3       | GPIO 11     |
+|     RST (Reset)   | GPIO 22       |     RST (Reset)   | GPIO 11     |
+|        LED        | GPIO 27       |        LED        | GPIO 11     |
 
 LED external with 1k ohm or 330ohm (optional)
 
