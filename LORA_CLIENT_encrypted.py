@@ -48,7 +48,7 @@ class mylora(LoRa):
         mens=payload[4:-1] #to discard \xff\xff\x00\x00 and \x00 at the end
         mens=bytes(mens).decode("utf-8",'ignore')
         cipher = AES.new(self.key)
-        decodemens=base64.b64decode(mens)[:-1]
+        decodemens=base64.b64decode(mens)
         decoded = cipher.decrypt(decodemens)
         decoded = bytes(decoded).decode("utf-8",'ignore')
         print ("== RECEIVE: ", mens, "  |  Decoded: ",decoded )
