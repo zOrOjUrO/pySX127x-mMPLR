@@ -7,9 +7,6 @@ For security reasons it is advisable to use the encrypted versions that use [Adv
 
 **Update 08/2018 - Added support for 2 modules at the same time** Now it is possible to use 2 radio modules at the same time in Raspberry Pi. To do this, simply use the BOARD2 settings like this:
 ```python
-# Use BOARD 1
-from SX127x.LoRa import LoRa
-from SX127x.board_config import BOARD
 # Use BOARD 2 (you can use BOARD1 and BOARD2 at the same time just give another name)
 from SX127x.LoRa import LoRa2 as LoRa
 from SX127x.board_config import BOARD2 as BOARD
