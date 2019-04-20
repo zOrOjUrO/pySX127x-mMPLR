@@ -17,9 +17,7 @@ It supports Python 3 or newer and PyPy. https://pypi.org/project/pyLoRa/
 
 ## Easy setup on Raspberry Pi:
 ```bash
-sudo raspi-config
--- Interfacing Options
---- enable SPI
+sudo raspi-config nonint do_spi 0
 sudo apt-get install python-dev python3-dev
 ```
 
