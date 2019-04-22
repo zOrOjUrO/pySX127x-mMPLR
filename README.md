@@ -17,9 +17,7 @@ It supports Python 3 or newer and PyPy. https://pypi.org/project/pyLoRa/
 
 ## Easy setup on Raspberry Pi:
 ```bash
-sudo raspi-config
--- Interfacing Options
---- enable SPI
+sudo raspi-config nonint do_spi 0
 sudo apt-get install python-dev python3-dev
 ```
 
@@ -174,7 +172,7 @@ lora.set_mode(MODE.STDBY)
 ```
 Registers are queried like so:
 ```python
-print lora.version()        # this prints the sx127x chip version
+print lora.get_version()        # this prints the sx127x chip version
 print lora.get_freq()       # this prints the frequency setting 
 ```
 and setting registers is easy, too
