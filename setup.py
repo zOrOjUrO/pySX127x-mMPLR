@@ -5,10 +5,10 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name="pyLoRa",
-    version="0.2.5",
+    version="0.3.0",
     author="Rui Silva",
     author_email="ruisilva.real@sapo.pt",
-    description="This is a python interface to the Ai-Thinker Ra-02 Modules LoRa long range, low power transceiver family. This module uses SX1278 IC and works on a 433MHz frequency.",
+    description="(LoRa communication 868MHz VERSION) This is a python interface to the Semtech SX1276/7/8/9 long range, low power transceiver family.",
     long_description=long_description,
     long_description_content_type="text/markdown",
     url="https://github.com/rpsreal/pySX127x",

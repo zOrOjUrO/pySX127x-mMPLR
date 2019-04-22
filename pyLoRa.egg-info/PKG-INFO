@@ -1,13 +1,14 @@
 Metadata-Version: 2.1
 Name: pyLoRa
-Version: 0.2.5
-Summary: This is a python interface to the Ai-Thinker Ra-02 Modules LoRa long range, low power transceiver family. This module uses SX1278 IC and works on a 433MHz frequency.
+Version: 0.3.0
+Summary: (LoRa communication 868MHz VERSION) This is a python interface to the Semtech SX1276/7/8/9 long range, low power transceiver family.
 Home-page: https://github.com/rpsreal/pySX127x
 Author: Rui Silva
 Author-email: ruisilva.real@sapo.pt
 License: UNKNOWN
 Description: # This fork - pyLoRa
-        This fork is an adaptation of the original mayeranalytic configured to work with Ai-Thinker Ra-02 Modules This module uses SX1278 IC and works on a 433MHz frequency. The examples in this library LORA_SERVER and LORA_CLIENT can be used to communicate with the Arduino through the RADIOHEAD library, for more information see these examples -> [rpsreal/LoRa_Ra-02_Arduino](https://github.com/rpsreal/LoRa_Ra-02_Arduino). 
+        This fork is an adaptation and an improved version of the original mayeranalytic work (mayeranalytics/pySX127x)
+        LORA_CLIENT can be used to communicate with the Arduino through the RADIOHEAD library, for more information see these examples -> [rpsreal/LoRa_Ra-02_Arduino](https://github.com/rpsreal/LoRa_Ra-02_Arduino). 
         
         **Update 05/2018 - Added encrypted versions** 
         For security reasons it is advisable to use the encrypted versions that use [Advanced Encryption Standard](https://en.wikipedia.org/wiki/Advanced_Encryption_Standard) (AES). You can also use them to communicate with the Arduino.
@@ -20,14 +21,14 @@ Description: # This fork - pyLoRa
         from SX127x.board_config import BOARD2 as BOARD
         ```
         
+        **Update 04/2019 - Clarification on the use of different communication frequencies** It is possible to use several different communication frequencies using pyLora. The default frequency is 868MHz (Europe), but you can change the communication frequency to use Ai-Thinker Ra-02 Modules (433MHz) for example. To do this, look for the "868" in the SX127x/LoRa.py file and replace them with the desired frequency.
+        
         
         It supports Python 3 or newer and PyPy. https://pypi.org/project/pyLoRa/
         
         ## Easy setup on Raspberry Pi:
         ```bash
-        sudo raspi-config
-        -- Interfacing Options
-        --- enable SPI
+        sudo raspi-config nonint do_spi 0
         sudo apt-get install python-dev python3-dev
         ```
         
@@ -182,7 +183,7 @@ Description: # This fork - pyLoRa
         ```
         Registers are queried like so:
         ```python
-        print lora.version()        # this prints the sx127x chip version
+        print lora.get_version()        # this prints the sx127x chip version
         print lora.get_freq()       # this prints the frequency setting 
         ```
         and setting registers is easy, too
