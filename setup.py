@@ -5,7 +5,7 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name="pyLoRa",
-    version="0.3.0",
+    version="0.3.1",
     author="Rui Silva",
     author_email="ruisilva.real@sapo.pt",
     description="(LoRa communication 868MHz VERSION) This is a python interface to the Semtech SX1276/7/8/9 long range, low power transceiver family.",

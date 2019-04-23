@@ -1,6 +1,6 @@
 # This fork - pyLoRa
 This fork is an adaptation and an improved version of the original mayeranalytic work (mayeranalytics/pySX127x)
-LORA_CLIENT can be used to communicate with the Arduino through the RADIOHEAD library, for more information see these examples -> [rpsreal/LoRa_Ra-02_Arduino](https://github.com/rpsreal/LoRa_Ra-02_Arduino). 
+pyLoRa can be used to communicate with the Arduino through the RADIOHEAD library, for more information see these examples -> [rpsreal/LoRa_Ra-02_Arduino](https://github.com/rpsreal/LoRa_Ra-02_Arduino). 
 
 **Update 05/2018 - Added encrypted versions** 
 For security reasons it is advisable to use the encrypted versions that use [Advanced Encryption Standard](https://en.wikipedia.org/wiki/Advanced_Encryption_Standard) (AES). You can also use them to communicate with the Arduino.
