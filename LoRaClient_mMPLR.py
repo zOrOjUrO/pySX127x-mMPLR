@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-""" This program sends a response whenever it receives the "INF" """
+""" This program sends a response whenever it receives the "CNT" """
 
 # Copyright 2022 zOrOjUrO.
 #

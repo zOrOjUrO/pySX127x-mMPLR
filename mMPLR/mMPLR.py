@@ -18,8 +18,10 @@ class mMPLR:
         self.Flag = '2' #0 - SYN;1 - SYN-ACK;2 - DATA;3 - BVACK;4 - FIN;5 - ACK
         self.Checksum = b'\xd4\x1d\x8c\xd9\x8f\x00\xb2\x04\xe9\x80\t\x98\xec\xf8B~' #hashlib.md5(b'').digest()
         self.Payload = ''
-
-        self.maxPayloadSize = 239
+        
+        self.maxPayloadSize = 236 #255Bytes -19Bytes (Header)
+        self.maxBatchSize = 99
+        #self.Batches = 1
 
     def setDestinationID(self, deviceId):
         self.DestinationID = str(deviceId)
@@ -38,6 +40,7 @@ class mMPLR:
         self.SequenceNo = str(seqNo)
 
     def setBatchSize(self, batchSize):
+        assert self.maxBatchSize >= batchSize
         self.BatchSize = str(batchSize)    
     
     def setFlag(self, flag):
@@ -47,15 +50,30 @@ class mMPLR:
         flags = {'SYN':0, 'SYN-ACK':1,'DATA':2,'BVACK':3,'FIN':4,'ACK':5}
         self.Flag = str(flags.get(flag.upper()))
 
+    """
+    DestinationID   -       3 Bytes
+    DeviceID        -       3 Bytes
+    ~ ServiceType   -       1 Byte
+    SequenceNo      -       2 Bytes
+    Flag            -       1 Byte
+    Payload Size    -       3 Bytes
+    ~ BatchSize     -       2 Bytes
+    * Batches       -       2 Bytes
+    //BatchNo       -       2 Bytes
+    Checksum        -       4 Bytes
+    """
+
     def genChecksum(self):
-        header = bytes(self.DestinationID, 'ascii').ljust(32)[:32]\
-        +bytes(self.DeviceID, 'ascii').ljust(32)[:32]\
-        +bytes(self.ServiceType, 'ascii').zfill(8)\
-        +bytes(self.SequenceNo, 'ascii').zfill(16)\
-        +bytes(self.Flag, 'ascii').zfill(8)\
-        +bytes(self.PAYLD_SIZE, 'ascii').zfill(8)\
-        +bytes(self.BatchSize, 'ascii').zfill(8)
-        self.Checksum = hashlib.md5(header).digest() 
+        header = bytes(self.DestinationID, 'ascii').ljust(3)[:3]\
+        +bytes(self.DeviceID, 'ascii').ljust(3)[:3]\
+        +bytes(self.ServiceType, 'ascii').ljust(1)\
+        +bytes(self.SequenceNo, 'ascii').ljust(2)\
+        +bytes(self.Flag, 'ascii').ljust(1)\
+        +bytes(self.PAYLD_SIZE, 'ascii').ljust(3)\
+        +bytes(self.BatchSize, 'ascii').ljust(2)
+        #+bytes(self.Batches, 'ascii').ljust(2))
+
+        self.Checksum = hashlib.md5(header).digest()[:4] 
         return self.Checksum, header
 
     def setPayload(self, payload: str):
@@ -97,21 +115,21 @@ class mMPLR:
 
     
     def parsePacket(self, rawpacket):
-        assert len(rawpacket) >= 128
-        rawheader = rawpacket[:16*8]
-        header = {"DestinationUID":rawheader[:32].rstrip().decode('ascii'),
-        "DeviceUID":rawheader[32:64].rstrip().decode('ascii'),
-        "Service":rawheader[64:72].decode('ascii'),
-        "SequenceNo":rawheader[72:88].decode('ascii'),
-        "Flag":rawheader[88:96].decode('ascii'),
-        "PayloadSize":rawheader[96:104].decode('ascii'),
-        "BatchSize":rawheader[104:112].decode('ascii'),
-        "Checksum":rawheader[112:] 
+        assert len(rawpacket) >= 19
+        rawheader = rawpacket[:19]
+        header = {"DestinationUID":rawheader[:3].rstrip().decode('ascii'),
+        "DeviceUID":rawheader[3:6].rstrip().decode('ascii'),
+        "Service":rawheader[6:7].decode('ascii'),
+        "SequenceNo":rawheader[7:9].decode('ascii'),
+        "Flag":rawheader[9:10].decode('ascii'),
+        "PayloadSize":rawheader[10:13].decode('ascii'),
+        "BatchSize":rawheader[13:15].decode('ascii'),
+        "Checksum":rawheader[15:] 
         }
-        if header["Checksum"] != hashlib.md5(rawheader[:-16]).digest():
+        if header["Checksum"] != hashlib.md5(rawheader[:-4]).digest()[:4]:
             print("Packet Corrupt.\nPacket ",header["SequenceNo"], " to be resent")
             return {"isCorrupt":True, "PacketNo":header["SequenceNo"]} 
-        content = rawpacket[16*8:]
+        content = rawpacket[19:]
         return {"Header": header, "Content": content}
 
     def parsePackets(self, packets):
@@ -130,7 +148,8 @@ class mMPLR:
 
 if __name__ == "__main__":
     mplr = mMPLR(devId='1')
-    packets = mplr.getPackets("cz3gm8ix0gr092bnzyijsdmau4e8ublxb4gz2jx85gqir8r3sj5ekdigk139g6jalbe0xl1hro9xlvq2sewa8iqo9e46ap2eyu0coojtpfi6tzzre94719c17id9hpvhkw6amcvtmfdf1m9811o71xyx1yb3p9hx8hwcbo7f7qawlupgkm8kttbxqcbj0z53wotey1v33utg0lcjkbug4vx0jvunyxxfhbw0vjqaq493yyw5vsym6xcmkwy2z21ob9xgutg51n86nc9onrw8sgwp1v79bvl3pqo99bnlpsyorb4w1sct1cphr96qc7l6qi9v0u7dgvqiaq9w5ei9t3pvxqjux1dqhx23ffgdo1ke2ub9x4dpr2ioslyr8p2fyvwm30kpun5mok8deld43wmihc3c0ldg8yb01eu4xzdoc6fsmxsqs2poqa87ghdvxfqt24licn9hiureey069n3xdfsr7no8d21z5ndy45k1p6ndhxed", 2, "1")
-    print(*packets, sep="\n")
+    packets = mplr.getPackets("cz3gm8ix0gr092bnzyijsdmau4e8ublxb4gz2jx85gqir8r3sj5ekdigk139g6jalbe0xl1hro9xlvq2sewa8iqo9e46ap2eyu0coojtpfi6tzzre94719c17id9hpvhkw6amcvtmfdf1m9811o71xyx1yb3p9hx8hwcbo7f7qawlupgkm8kttbxqcbj0z53wotey1v33utg0lcjkbug4vx0jvunyxxfhbw0vjqaq493yyw5vsym6xcmkwy2z21ob9xgutg51n86nc9onrw8sgwp1v79bvl3pqo99bnlpsyorb4w1sct1cphr96qc7l6qi9v0u7dgvqiaq9w5ei9t3pvxqjux1dqhx23ffgdo1ke2ub9x4dpr2ioslyr8p2fyvwm30kpun5mok8deld43wmihc3c0ldg8yb01eu4xzdoc6fsmxsqs2poqa87ghdvxfqt24licn9hiureey069n3xdfsr7no8d21z5ndy45k1p6ndhxed", 1, 2)
+    print("\n\n\n")
+    print(*packets, sep="\n\n\n")
     print(mplr.parsePackets(packets=packets))
         
