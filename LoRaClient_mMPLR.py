@@ -2,9 +2,9 @@
 
 """ This program sends a response whenever it receives the "INF" """
 
-# Copyright 2018 Rui Silva.
+# Copyright 2022 zOrOjUrO.
 #
-# This file is part of rpsreal/pySX127x, fork of mayeranalytics/pySX127x.
+# This file is part of pySX127x-mMPLR, a fork of rpsreal/pySX127xw which is fork of mayeranalytics/pySX127x.
 #
 # pySX127x is free software: you can redistribute it and/or modify it under the terms of the GNU Affero General Public
 # License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
