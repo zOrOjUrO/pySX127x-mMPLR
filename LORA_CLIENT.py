@@ -52,8 +52,9 @@ class mylora(LoRa):
         #print("\nRxDone")
         self.clear_irq_flags(RxDone=1)
         payload = self.read_payload(nocheck=True )# Receive INF
-        print ("Receive: ")
-        mens=bytes(payload).decode("utf-8",'ignore')
+        print ("Receive: ",payload)
+        mens=bytes(payload)
+        print(mens)
         self.print_time()
         mens=mens[2:-1] #to discard \x00\x00 and \x00 at the end
         print(mens)

@@ -6,7 +6,7 @@ try:
 except:
     pass
 
-import SecurePass
+from mMPLR import SecurePass
 
 """
     DestinationID   -       3 Bytes
@@ -61,7 +61,7 @@ class mMPLR:
         self.SequenceNo = str(seqNo)
 
     def setBatchSize(self, batchSize):
-        assert self.maxBatchSize >= batchSize
+        assert self.maxBatchSize >= int(batchSize)
         self.BatchSize = str(batchSize)    
     
     def setFlag(self, flag):

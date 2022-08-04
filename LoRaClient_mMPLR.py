@@ -52,13 +52,16 @@ class mylora(LoRa):
         BOARD.led_on()
         #print("\nRxDone")
         self.clear_irq_flags(RxDone=1)
-        pkt = bytes(self.read_payload(nocheck=True))
+        p = self.read_payload(nocheck=True)
+        print(p)
+        pkt = bytes(p)
         #print(packet) # Receive DATA
         BOARD.led_off()
 
         packet = self.mplr.parsePacket(rawpacket=pkt)
         header = packet.get("Header")
-        if header.get("Flag") == 0:
+        flag = header.get("Flag")
+        if flag == 0:
             print("\nSYN Received")
             self.destId = header.get("DeviceUID")
             #Generate Data for Transmission
@@ -69,14 +72,17 @@ class mylora(LoRa):
                                             Service=0,
                                             BatchSize=self.mplr.BatchSize,
                                             Flag=1)
-            time.sleep(1) # Wait for the client be ready
+            time.sleep(3) # Wait for the client be ready
             print ("Send: SYN-ACK")
             self.sendData(synack)
             self.set_mode(MODE.SLEEP)
             self.reset_ptr_rx()
             self.set_mode(MODE.RXCONT)
-            time.sleep(2)    
-
+            time.sleep(2)
+        
+        elif flag==5:
+            print("\nReceived ACK")
+            
         """    
         if req=="CNT":
             print("Received data request CNT")
