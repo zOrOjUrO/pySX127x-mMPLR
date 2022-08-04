@@ -33,54 +33,60 @@ BOARD.reset()
 #parser = LoRaArgumentParser("Lora tester")
 
 
-class mylora(LoRa):
+class mMPLRLoraServer(LoRa):
     def __init__(self, verbose=False):
-        super(mylora, self).__init__(verbose)
+        super(mMPLRLoraServer, self).__init__(verbose)
         self.set_mode(MODE.SLEEP)
         self.set_dio_mapping([0] * 6)
-        self.var=0
+        self.state=0
 
         self.mplr = mMPLR(devId=2)
         self.packets = list()
-        
+
+        self.currentDataType = 0    #0 - Text; 1 - Sensor; 2 - Image; 3- Audio, 4 - Control
+        self.destId = '2'
+        self.BatchSize = 0
+        self.brx_count = 0          #received packets in batch
+        self.b_count = 0            #batch count
+
+
+    def sendData(self, raw):
+        data = [int(hex(c), 0) for c in raw]
+        self.write_payload(data)
+        BOARD.led_on()
+        self.set_mode(MODE.TX)
+        time.sleep(1)
 
     def on_rx_done(self):
         BOARD.led_on()
         #print("\nRxDone")
         self.clear_irq_flags(RxDone=1)
-        print ("\nReceived Packet.")
         pkt = bytes(self.read_payload(nocheck=True))
         #print(packet) # Receive DATA
         BOARD.led_off()
 
         packet = self.mplr.parsePacket(rawpacket=pkt)
-        
-        self.packets.append(packet)
-        
         header = packet.get("Header")
-        datatype = header.get("Service")
-        seqNo = int(header.get("SequenceNo"), 0)
-        if seqNo == 0:
-            self.BatchSize = int(header.get("BatchSize", 1))
-        if seqNo == self.BatchSize - 1:
-            content = self.mplr.parsePackets(self.packets)
-            #self.B64.Filetype = datatype
-            types = {0:"Text", 1:"Sensor", 2:"Image", 3:"Audio"}
-            type = types.get(datatype)
-            print("File Type: "+type, "\n")
-            print("Received: \n", messageBytes.decode('utf-8'))
+        flag = header.get("Flag")
+        if flag == 1:
+            print("\nSYN-ACK Received")
+            self.BatchSize = header.get("BatchSize")
+            self.currentDataType = header.get("Service", 0)
+            #Send SYN-ACK
+            time.sleep(1) # Wait for the client be ready
+            self.state = 1                                              
 
-            time.sleep(2) # Wait for the client be ready
-            print ("Send: ACK")
-            self.write_payload([255, 255, 0, 0, 65, 67, 75, 0]) # Send ACK
-            self.set_mode(MODE.TX)
-            self.var=1
-        
-        self.set_mode(MODE.SLEEP)
-        self.reset_ptr_rx()
-        self.set_mode(MODE.RXCONT)
-        time.sleep(2)
-        
+        elif flag == 2 and self.state == 2:
+            print("\nDATA Packet Received")
+            self.packets.append(packet)
+            self.reset_ptr_rx()
+            self.set_mode(MODE.RXCONT)
+            fin = self.mplr.genFlagPacket(DestinationID=self.destId, Flag=4)
+            self.sendData(fin)
+            self.set_mode(MODE.SLEEP)
+            self.reset_ptr_rx()
+            self.set_mode(MODE.RXCONT)
+            time.sleep(1)
         
         
 
@@ -110,12 +116,16 @@ class mylora(LoRa):
 
     def start(self):          
         while True:
-            while (self.var==0):
-                input("Press Enter to Send CNT")
-                print ("CNT Sent")
-                self.write_payload([67, 78, 84]) # Send INF
-                self.set_mode(MODE.TX)
-                time.sleep(3) # there must be a better solution but sleep() works
+            while (self.state==0):
+                input("Press Enter to Send SYN")
+                print ("Send: SYN")
+                syn = self.mplr.genFlagPacket(DestinationID=self.destId, Flag=0)
+                self.sendData(syn)
+                self.set_mode(MODE.SLEEP)
+                self.reset_ptr_rx()
+                self.set_mode(MODE.RXCONT)
+                time.sleep(1) 
+                print ("SYN Sent")
                 self.reset_ptr_rx()
                 self.set_mode(MODE.RXCONT) # Receiver mode
             
@@ -123,10 +133,25 @@ class mylora(LoRa):
                 while (time.time() - start_time < 10): # wait until receive data or 10s
                     pass;
             
-            self.var=0
-            self.reset_ptr_rx()
-            self.set_mode(MODE.RXCONT) # Receiver mode
-            time.sleep(10)
+            while (self.state == 1):
+                print ("Send: ACK")
+                print ("Connected. Waiting For DATA")
+                ack = self.mplr.genFlagPacket(DestinationID=self.destId, Flag=5)
+                self.sendData(ack)
+                self.set_mode(MODE.SLEEP)
+                self.reset_ptr_rx()
+                self.set_mode(MODE.RXCONT)
+                time.sleep(2)
+                self.state = 2 
+                start_time = time.time()
+                while (time.time() - start_time < 10): # wait until receive data or 10s
+                    pass;
+            
+            while (self.state == 2):
+                print("Receiving DATA")
+                self.reset_ptr_rx()
+                self.set_mode(MODE.RXCONT) # Receiver mode
+                time.sleep(10)
 
 lora = mylora(verbose=False)
 #args = parser.parse_args(lora) # configs in LoRaArgumentParser.py

@@ -46,17 +46,38 @@ class mylora(LoRa):
         self.write_payload(data)
         BOARD.led_on()
         self.set_mode(MODE.TX)
-        time.sleep(5)
+        time.sleep(2)
 
     def on_rx_done(self):
         BOARD.led_on()
         #print("\nRxDone")
         self.clear_irq_flags(RxDone=1)
-        payload = self.read_payload(nocheck=True )# Receive CNT
-        print ("Receive: ")
-        req = bytes(payload).decode("utf-8",'replace')
-        print(req)
+        pkt = bytes(self.read_payload(nocheck=True))
+        #print(packet) # Receive DATA
         BOARD.led_off()
+
+        packet = self.mplr.parsePacket(rawpacket=pkt)
+        header = packet.get("Header")
+        if header.get("Flag") == 0:
+            print("\nSYN Received")
+            self.destId = header.get("DeviceUID")
+            #Generate Data for Transmission
+            self.packets = self.mplr.getPackets(data="This is a Test", 
+                                                dataType="0", 
+                                                destinationId=self.destId)
+            synack = self.mplr.genFlagPacket(DestinationID=self.destId,
+                                            Service=0,
+                                            BatchSize=self.mplr.BatchSize,
+                                            Flag=1)
+            time.sleep(1) # Wait for the client be ready
+            print ("Send: SYN-ACK")
+            self.sendData(synack)
+            self.set_mode(MODE.SLEEP)
+            self.reset_ptr_rx()
+            self.set_mode(MODE.RXCONT)
+            time.sleep(2)    
+
+        """    
         if req=="CNT":
             print("Received data request CNT")
             time.sleep(2)
@@ -65,7 +86,7 @@ class mylora(LoRa):
             for packet in packets: 
                 print("Sending Packet --> ", packet)
                 self.sendData(packet)
-            
+        """    
         time.sleep(5)
         self.reset_ptr_rx()
         self.set_mode(MODE.RXCONT)

@@ -33,7 +33,7 @@ class mMPLR:
         self.ServiceType = '0' #0 - Text; 1 - Sensor; 2 - Image; 3- Audio, 4 - Control
         self.SequenceNo = '1'
         self.BatchSize = '1'
-        self.Flag = '2' #0 - SYN;1 - SYN-ACK;2 - DATA;3 - BVACK;4 - FIN;5 - ACK
+        self.Flag = '2' #0 - SYN;1 - SYN-ACK;2 - DATA;3 - BVACK;4 - FIN;5 - ACK; 6-RSND
         self.Checksum = b'\xd4\x1d\x8c\xd9\x8f\x00\xb2\x04\xe9\x80\t\x98\xec\xf8B~' #hashlib.md5(b'').digest()
         self.Payload = ''
         
@@ -128,11 +128,11 @@ class mMPLR:
         rawheader = rawpacket[:19]
         header = {"DestinationUID":rawheader[:3].rstrip().decode('ascii'),
         "DeviceUID":rawheader[3:6].rstrip().decode('ascii'),
-        "Service":rawheader[6:7].decode('ascii'),
-        "SequenceNo":rawheader[7:9].decode('ascii'),
-        "Flag":rawheader[9:10].decode('ascii'),
-        "PayloadSize":rawheader[10:13].decode('ascii'),
-        "BatchSize":rawheader[13:15].decode('ascii'),
+        "Service":int(rawheader[6:7].decode('ascii')),
+        "SequenceNo":int(rawheader[7:9].decode('ascii')),
+        "Flag":int(rawheader[9:10].decode('ascii')),
+        "PayloadSize":int(rawheader[10:13].decode('ascii')),
+        "BatchSize":int(rawheader[13:15].decode('ascii')),
         "Checksum":rawheader[15:] 
         }
         if header["Checksum"] != hashlib.md5(rawheader[:-4]).digest()[:4]:
