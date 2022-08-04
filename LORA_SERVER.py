@@ -25,6 +25,9 @@ import time
 from SX127x.LoRa import *
 #from SX127x.LoRaArgumentParser import LoRaArgumentParser
 from SX127x.board_config import BOARD
+from datetime import datetime
+
+
 
 BOARD.setup()
 BOARD.reset()
@@ -37,20 +40,30 @@ class mylora(LoRa):
         self.set_mode(MODE.SLEEP)
         self.set_dio_mapping([0] * 6)
         self.var=0
+        self.rx_count=0
+    
+    def print_time(self):
+        now = datetime.now()
+        current_time = now.strftime("%H:%M:%S")
+        print("Current Time =", current_time)
 
     def on_rx_done(self):
+        self.rx_count+=1
         BOARD.led_on()
         #print("\nRxDone")
         self.clear_irq_flags(RxDone=1)
         payload = self.read_payload(nocheck=True)
         print ("Receive: ")
         print(bytes(payload).decode("utf-8",'ignore')) # Receive DATA
+        self.print_time()
         BOARD.led_off()
         time.sleep(2) # Wait for the client be ready
-        print ("Send: ACK")
-        self.write_payload([255, 255, 0, 0, 65, 67, 75, 0]) # Send ACK
-        self.set_mode(MODE.TX)
-        self.var=1
+        if self.rx_count==3:
+            print ("Send: ACK")
+            self.write_payload([255, 255, 0, 0, 65, 67, 75, 0]) # Send ACK
+            self.print_time()
+            self.set_mode(MODE.TX)
+            self.var=1
 
     def on_tx_done(self):
         print("\nTxDone")
@@ -81,6 +94,7 @@ class mylora(LoRa):
             while (self.var==0):
                 print ("Send: INF")
                 self.write_payload([255, 255, 0, 0, 73, 78, 70, 0]) # Send INF
+                self.print_time()
                 self.set_mode(MODE.TX)
                 time.sleep(3) # there must be a better solution but sleep() works
                 self.reset_ptr_rx()
