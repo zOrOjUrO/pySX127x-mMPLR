@@ -109,7 +109,7 @@ class mMPLR:
         
     def getPackets(self, data, dataType, destinationId, isEncrypted = False):
         packets = []
-        if isEncrypted: data = bytes(SecurePass.encrypt(data, self.password))
+        if isEncrypted: data = SecurePass.encrypt(data, self.password)
         leng = len(data)
         self.setDestinationID(destinationId)
         self.setBatchSize(leng//self.maxPayloadSize+ (1 if leng%self.maxPayloadSize else 0))
@@ -152,16 +152,17 @@ class mMPLR:
                 break
             content += packet.get("Content")
         if len(BatchACK): return print("Batch Partially Corrupt")
-        return content if not isEncrypted else bytes(SecurePass.decrypt(content, self.password))
+        return content if not isEncrypted else bytes(SecurePass.decrypt(content, self.password), 'utf-8')
 
 
 if __name__ == "__main__":
     mplr = mMPLR(devId='1')
-    packets = mplr.getPackets("cz3gm8ix0gr092bnzyijsdmau4e8ublxb4gz2jx85gqir8r3sj5ekdigk139g6jalbe0xl1hro9xlvq2sewa8iqo9e46ap2eyu0coojtpfi6tzzre94719c17id9hpvhkw6amcvtmfdf1m9811o71xyx1yb3p9hx8hwcbo7f7qawlupgkm8kttbxqcbj0z53wotey1v33utg0lcjkbug4vx0jvunyxxfhbw0vjqaq493yyw5vsym6xcmkwy2z21ob9xgutg51n86nc9onrw8sgwp1v79bvl3pqo99bnlpsyorb4w1sct1cphr96qc7l6qi9v0u7dgvqiaq9w5ei9t3pvxqjux1dqhx23ffgdo1ke2ub9x4dpr2ioslyr8p2fyvwm30kpun5mok8deld43wmihc3c0ldg8yb01eu4xzdoc6fsmxsqs2poqa87ghdvxfqt24licn9hiureey069n3xdfsr7no8d21z5ndy45k1p6ndhxed", 1, 2)
+    packets = mplr.getPackets("cz3gm8ix0gr092bnzyijsdmau4e8ublxb4gz2jx85gqir8r3sj5ekdigk139g6jalbe0xl1hro9xlvq2sewa8iqo9e46ap2eyu0coojtpfi6tzzre94719c17id9hpvhkw6amcvtmfdf1m9811o71xyx1yb3p9hx8hwcbo7f7qawlupgkm8kttbxqcbj0z53wotey1v33utg0lcjkbug4vx0jvunyxxfhbw0vjqaq493yyw5vsym6xcmkwy2z21ob9xgutg51n86nc9onrw8sgwp1v79bvl3pqo99bnlpsyorb4w1sct1cphr96qc7l6qi9v0u7dgvqiaq9w5ei9t3pvxqjux1dqhx23ffgdo1ke2ub9x4dpr2ioslyr8p2fyvwm30kpun5mok8deld43wmihc3c0ldg8yb01eu4xzdoc6fsmxsqs2poqa87ghdvxfqt24licn9hiureey069n3xdfsr7no8d21z5ndy45k1p6ndhxed",
+                              1, 2, isEncrypted=True)
     print("\n\n\n")
     print(*packets, sep="\n\n\n")
     # for packet in packets:
     #     l = [int(hex(e), 0) for e in packet]
     #     print(l, "\n", bytes(l), "\n\n")
-    print(mplr.parsePackets(packets=packets))
+    print(mplr.parsePackets(packets=packets, isEncrypted=True))
         
