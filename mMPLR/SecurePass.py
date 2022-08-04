@@ -30,3 +30,4 @@ def decrypt(enc, password):
     iv = enc[:16]
     cipher = AES.new(private_key, AES.MODE_CBC, iv)
     return (unpad(cipher.decrypt(enc[16:]))).decode('utf-8')
+
