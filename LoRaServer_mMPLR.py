@@ -156,9 +156,9 @@ class mMPLRLoraServer(LoRa):
             
             while (self.state == 1):
                 print ("Send: ACK")
-                print ("Connected. Waiting For DATA")
                 ack = self.mplr.genFlagPacket(DestinationID=self.destId, Service=self.currentDataType, BatchSize=self.BatchSize, Flag=5)
                 self.sendData(ack)
+                print ("Connected. Waiting For DATA")
                 self.set_mode(MODE.SLEEP)
                 self.reset_ptr_rx()
                 self.set_mode(MODE.RXCONT)
@@ -172,7 +172,9 @@ class mMPLRLoraServer(LoRa):
                 print("Receiving DATA")
                 self.reset_ptr_rx()
                 self.set_mode(MODE.RXCONT) # Receiver mode
-                time.sleep(10)
+                start_time = time.time()
+                while (time.time() - start_time < 10): # wait until receive data or 10s
+                    pass;
 
             while (self.state == 3):
                 self.brx_count = 0
@@ -190,17 +192,18 @@ class mMPLRLoraServer(LoRa):
                     pass;
 
             #state 4 -> Corrupt Packet found in the Batch, replace packet
-
+            #use dictionary and set
             while (self.state == 5):
                 #Should do 4 way?
                 print("\nSend FIN-ACK")
                 ack = self.mplr.genFlagPacket(DestinationID=self.destId, Service=self.currentDataType, BatchSize=self.BatchSize, Flag=5)
                 self.sendData(ack)
                 self.set_mode(MODE.SLEEP)
-                print("\nConnection Terminated")    
+                print("\nConnection Terminated")
+                self.state = 0
                 #parse the content
                 receivedContent = self.mplr.parsePackets(self.packets, isRaw=False)
-                print(receivedContent.decode())
+                print("Received Content: ", receivedContent.decode())
                 self.reset_ptr_rx()
                 self.set_mode(MODE.RXCONT)
                 time.sleep(1)
