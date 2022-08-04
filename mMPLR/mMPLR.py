@@ -115,6 +115,7 @@ class mMPLR:
 
     
     def parsePacket(self, rawpacket):
+        print("Parsing Packet (length ", len(rawpacket), ") : ", rawpacket)
         assert len(rawpacket) >= 19
         rawheader = rawpacket[:19]
         header = {"DestinationUID":rawheader[:3].rstrip().decode('ascii'),
@@ -132,7 +133,7 @@ class mMPLR:
         content = rawpacket[19:]
         return {"Header": header, "Content": content}
 
-    def parsePackets(self, packets):
+    def parseRawPackets(self, packets):
         content = b''
         BatchACK = []
         for pkt in packets:
@@ -144,12 +145,22 @@ class mMPLR:
             content += packet.get("Content")
         if len(BatchACK): return print("Batch Partially Corrupt")
         return content
-
+    
+    def parsePackets(self, packets):
+        content = b''
+        BatchACK = []
+        for packet in packets:
+            if packet.get("isCorrupt", False):
+                BatchACK.append(packet.get("PacketNo"))
+                break
+            content += packet.get("Content")
+        if len(BatchACK): return print("Batch Partially Corrupt")
+        return content
 
 if __name__ == "__main__":
     mplr = mMPLR(devId='1')
     packets = mplr.getPackets("cz3gm8ix0gr092bnzyijsdmau4e8ublxb4gz2jx85gqir8r3sj5ekdigk139g6jalbe0xl1hro9xlvq2sewa8iqo9e46ap2eyu0coojtpfi6tzzre94719c17id9hpvhkw6amcvtmfdf1m9811o71xyx1yb3p9hx8hwcbo7f7qawlupgkm8kttbxqcbj0z53wotey1v33utg0lcjkbug4vx0jvunyxxfhbw0vjqaq493yyw5vsym6xcmkwy2z21ob9xgutg51n86nc9onrw8sgwp1v79bvl3pqo99bnlpsyorb4w1sct1cphr96qc7l6qi9v0u7dgvqiaq9w5ei9t3pvxqjux1dqhx23ffgdo1ke2ub9x4dpr2ioslyr8p2fyvwm30kpun5mok8deld43wmihc3c0ldg8yb01eu4xzdoc6fsmxsqs2poqa87ghdvxfqt24licn9hiureey069n3xdfsr7no8d21z5ndy45k1p6ndhxed", 1, 2)
     print("\n\n\n")
     print(*packets, sep="\n\n\n")
-    print(mplr.parsePackets(packets=packets))
+    print(mplr.parseRawPackets(packets=packets))
         

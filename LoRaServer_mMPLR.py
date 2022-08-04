@@ -41,45 +41,48 @@ class mylora(LoRa):
         self.var=0
 
         self.mplr = mMPLR(devId=2)
-
+        self.packets = list()
+        
 
     def on_rx_done(self):
         BOARD.led_on()
         #print("\nRxDone")
         self.clear_irq_flags(RxDone=1)
-        payload = self.read_payload(nocheck=True)
-        print ("Receive: ")
-        packet = bytes(self.read_payload(nocheck=True)).decode('utf-8')
-        print(packet) # Receive DATA
+        print ("\nReceived Packet.")
+        pkt = bytes(self.read_payload(nocheck=True))
+        #print(packet) # Receive DATA
         BOARD.led_off()
 
-        initialPacket = self.mplr.parsePacket(rawpacket=packet)
-        header = initialPacket.get("Header")
-        datatype = header.get("Service")
-        packets = []
-
-        sleep(1)
+        packet = self.mplr.parsePacket(rawpacket=pkt)
         
-        for _ in range(header.get("BatchSize")):
-            packet = bytes.fromhex(map(hex, self.read_payload(nocheck=True))).decode('utf-8')
-            packets.append(self.mplr.parsePacket(packet))
-            self.set_mode(MODE.SLEEP)
-            self.reset_ptr_rx()
-            self.set_mode(MODE.RXCONT)
-            sleep(1)
+        self.packets.append(packet)
+        
+        header = packet.get("Header")
+        datatype = header.get("Service")
+        seqNo = int(header.get("SequenceNo"), 0)
+        if seqNo == 0:
+            self.BatchSize = int(header.get("BatchSize", 1))
+        if seqNo == self.BatchSize - 1:
+            content = self.mplr.parsePackets(self.packets)
+            #self.B64.Filetype = datatype
+            types = {0:"Text", 1:"Sensor", 2:"Image", 3:"Audio"}
+            type = types.get(datatype)
+            print("File Type: "+type, "\n")
+            print("Received: \n", messageBytes.decode('utf-8'))
 
-        messageBytes = bytes(self.mplr.parsePackets(packets=packets))
-        self.B64.Filetype = datatype
-        types = {0:"Sensor", 1:"Sensor", 2:"Image", 3:"Audio"}
-        type = types.get(datatype)
-        print("File Type: "+type, "\n")
-        print("Received: \n", messageBytes.decode('utf-8'))
-
-        time.sleep(2) # Wait for the client be ready
-        print ("Send: ACK")
-        self.write_payload([255, 255, 0, 0, 65, 67, 75, 0]) # Send ACK
-        self.set_mode(MODE.TX)
-        self.var=1
+            time.sleep(2) # Wait for the client be ready
+            print ("Send: ACK")
+            self.write_payload([255, 255, 0, 0, 65, 67, 75, 0]) # Send ACK
+            self.set_mode(MODE.TX)
+            self.var=1
+        
+        self.set_mode(MODE.SLEEP)
+        self.reset_ptr_rx()
+        self.set_mode(MODE.RXCONT)
+        time.sleep(2)
+        
+        
+        
 
     def on_tx_done(self):
         print("\nTxDone")
