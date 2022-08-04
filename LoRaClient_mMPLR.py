@@ -46,27 +46,27 @@ class mylora(LoRa):
         self.write_payload(data)
         BOARD.led_on()
         self.set_mode(MODE.TX)
-        sleep(1)
+        time.sleep(5)
 
     def on_rx_done(self):
         BOARD.led_on()
         #print("\nRxDone")
         self.clear_irq_flags(RxDone=1)
-        payload = self.read_payload(nocheck=True )# Receive INF
+        payload = self.read_payload(nocheck=True )# Receive CNT
         print ("Receive: ")
-        req = bytes(payload).decode("utf-8",'ignore')
+        req = bytes(payload).decode("utf-8",'replace')
         print(req)
         BOARD.led_off()
         if req=="CNT":
             print("Received data request CNT")
             time.sleep(2)
-            packets = self.mplr.getPackets("cz3gm8ix0gr092bnzyijsdmau4e8ublxb4gz2jx85gqir8r3sj5ekdigk139g6jalbe0xl1hro9xlvq2sewa8iqo9e46ap2eyu0coojtpfi6tzzre94719c17id9hpvhkw6amcvtmfdf1m9811o71xyx1yb3p9hx8hwcbo7f7qawlupgkm8kttbxqcbj0z53wotey1v33utg0lcjkbug4vx0jvunyxxfhbw0vjqaq493yyw5vsym6xcmkwy2z21ob9xgutg51n86nc9onrw8sgwp1v79bvl3pqo99bnlpsyorb4w1sct1cphr96qc7l6qi9v0u7dgvqiaq9w5ei9t3pvxqjux1dqhx23ffgdo1ke2ub9x4dpr2ioslyr8p2fyvwm30kpun5mok8deld43wmihc3c0ldg8yb01eu4xzdoc6fsmxsqs2poqa87ghdvxfqt24licn9hiureey069n3xdfsr7no8d21z5ndy45k1p6ndhxed", 2, "1")
+            packets = self.mplr.getPackets("cz3gm8ix0gr092bnzyijsdmau4e8ublxb4gz2jx85gqir8r3sj5ekdigk139g6jalbe0xl1hro9xlvq2sewa8iqo9e46ap2eyu0coojtpfi6tzzre94719c17id9hpvhkw6amcvtmfdf1m9811o71xyx1yb3p9hx8hwcbo7f7qawlupgkm8kttbxqcbj0z53wotey1v33utg0lcjkbug4vx0jvunyxxfhbw0vjqaq493yyw5vsym6xcmkwy2z21ob9xgutg51n86nc9onrw8sgwp1v79bvl3pqo99bnlpsyorb4w1sct1cphr96qc7l6qi9v0u7dgvqiaq9w5ei9t3pvxqjux1dqhx23ffgdo1ke2ub9x4dpr2ioslyr8p2fyvwm30kpun5mok8deld43wmihc3c0ldg8yb01eu4xzdoc6fsmxsqs2poqa87ghdvxfqt24licn9hiureey069n3xdfsr7no8d21z5ndy45k1p6ndhxed", 1, 2)
             print("Sending ", self.mplr.BatchSize, " Packets")
             for packet in packets: 
-                print("Sending Packet --> ", packet.decode('utf-8'))
+                print("Sending Packet --> ", packet)
                 self.sendData(packet)
             
-        time.sleep(2)
+        time.sleep(5)
         self.reset_ptr_rx()
         self.set_mode(MODE.RXCONT)
 
