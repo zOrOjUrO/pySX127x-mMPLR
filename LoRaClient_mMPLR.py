@@ -33,13 +33,16 @@ BOARD.reset()
 #parser = LoRaArgumentParser("Lora tester")
 
 
-class mylora(LoRa):
+class mMPLRLoraClient(LoRa):
     def __init__(self, verbose=False):
-        super(mylora, self).__init__(verbose)
+        super(mMPLRLoraClient, self).__init__(verbose)
         self.set_mode(MODE.SLEEP)
         self.set_dio_mapping([0] * 6)
 
         self.mplr = mMPLR(devId=1)
+
+        self.corrupt = []
+        self.nBatches = 0
 
     def sendData(self, raw):
         data = [int(hex(c), 0) for c in raw]
@@ -74,6 +77,7 @@ class mylora(LoRa):
                                             Flag=1)
             time.sleep(3) # Wait for the client be ready
             print ("Send: SYN-ACK")
+            self.state = 1
             self.sendData(synack)
             self.set_mode(MODE.SLEEP)
             self.reset_ptr_rx()
@@ -82,20 +86,43 @@ class mylora(LoRa):
         
         elif flag==5:
             print("\nReceived ACK")
-            
-        """    
-        if req=="CNT":
-            print("Received data request CNT")
-            time.sleep(2)
-            packets = self.mplr.getPackets("cz3gm8ix0gr092bnzyijsdmau4e8ublxb4gz2jx85gqir8r3sj5ekdigk139g6jalbe0xl1hro9xlvq2sewa8iqo9e46ap2eyu0coojtpfi6tzzre94719c17id9hpvhkw6amcvtmfdf1m9811o71xyx1yb3p9hx8hwcbo7f7qawlupgkm8kttbxqcbj0z53wotey1v33utg0lcjkbug4vx0jvunyxxfhbw0vjqaq493yyw5vsym6xcmkwy2z21ob9xgutg51n86nc9onrw8sgwp1v79bvl3pqo99bnlpsyorb4w1sct1cphr96qc7l6qi9v0u7dgvqiaq9w5ei9t3pvxqjux1dqhx23ffgdo1ke2ub9x4dpr2ioslyr8p2fyvwm30kpun5mok8deld43wmihc3c0ldg8yb01eu4xzdoc6fsmxsqs2poqa87ghdvxfqt24licn9hiureey069n3xdfsr7no8d21z5ndy45k1p6ndhxed", 1, 2)
-            print("Sending ", self.mplr.BatchSize, " Packets")
-            for packet in packets: 
-                print("Sending Packet --> ", packet)
-                self.sendData(packet)
-        """    
-        time.sleep(5)
-        self.reset_ptr_rx()
-        self.set_mode(MODE.RXCONT)
+            if self.state == 1:
+                #sending data
+                #for _ in range(2):
+                self.sendData(self.packets[0])
+                time.sleep(2)
+                fin = self.mplr.genFlagPacket(DestinationID=self.destId,
+                                                Service=0,
+                                                BatchSize=self.mplr.BatchSize,
+                                                Flag=4)
+                self.sendData(fin)
+                self.state = 5
+                self.set_mode(MODE.SLEEP)
+                self.reset_ptr_rx()
+                self.set_mode(MODE.RXCONT)
+                time.sleep(2)
+
+            elif self.state == 5:
+                print("\nConnnection Terminated")
+                self.state = 0
+                time.sleep(5)
+                self.reset_ptr_rx()
+                self.set_mode(MODE.RXCONT)
+
+            """    
+            if req=="CNT":
+                print("Received data request CNT")
+                time.sleep(2)
+                packets = self.mplr.getPackets("cz3gm8ix0gr092bnzyijsdmau4e8ublxb4gz2jx85gqir8r3sj5ekdigk139g6jalbe0xl1hro9xlvq2sewa8iqo9e46ap2eyu0coojtpfi6tzzre94719c17id9hpvhkw6amcvtmfdf1m9811o71xyx1yb3p9hx8hwcbo7f7qawlupgkm8kttbxqcbj0z53wotey1v33utg0lcjkbug4vx0jvunyxxfhbw0vjqaq493yyw5vsym6xcmkwy2z21ob9xgutg51n86nc9onrw8sgwp1v79bvl3pqo99bnlpsyorb4w1sct1cphr96qc7l6qi9v0u7dgvqiaq9w5ei9t3pvxqjux1dqhx23ffgdo1ke2ub9x4dpr2ioslyr8p2fyvwm30kpun5mok8deld43wmihc3c0ldg8yb01eu4xzdoc6fsmxsqs2poqa87ghdvxfqt24licn9hiureey069n3xdfsr7no8d21z5ndy45k1p6ndhxed", 1, 2)
+                print("Sending ", self.mplr.BatchSize, " Packets")
+                for packet in packets: 
+                    print("Sending Packet --> ", packet)
+                    self.sendData(packet)
+            """    
+        else:
+            time.sleep(5)
+            self.reset_ptr_rx()
+            self.set_mode(MODE.RXCONT)
 
     def on_tx_done(self):
         print("\nTxDone")
@@ -129,7 +156,7 @@ class mylora(LoRa):
                 pass;
             
 
-lora = mylora(verbose=False)
+lora = mMPLRLoraClient(verbose=False)
 #args = parser.parse_args(lora) # configs in LoRaArgumentParser.py
 
 #     Slow+long range  Bw = 125 kHz, Cr = 4/8, Sf = 4096chips/symbol, CRC on. 13 dBm

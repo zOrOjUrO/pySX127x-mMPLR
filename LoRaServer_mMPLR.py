@@ -75,21 +75,40 @@ class mMPLRLoraServer(LoRa):
             self.BatchSize = header.get("BatchSize")
             self.currentDataType = header.get("Service", 0)
             print("BatchSize: ",self.BatchSize,"DataType: ", self.currentDataType)
-            #Send SYN-ACK
+            #Send ACK
             time.sleep(1) # Wait for the client be ready
             self.state = 1                                              
 
         elif flag == 2 and self.state == 2:
             print("\nDATA Packet Received")
+            self.brx_count += 1
             self.packets.append(packet)
+            time.sleep(2)
             self.reset_ptr_rx()
             self.set_mode(MODE.RXCONT)
-            fin = self.mplr.genFlagPacket(DestinationID=self.destId, Flag=4)
-            self.sendData(fin)
-            self.set_mode(MODE.SLEEP)
+            if self.brx_count == self.BatchSize:
+                #send BVACK
+                time.sleep(1)
+                self.state = 3
+
+        elif flag == 2 and self.state == 3:
+            print("\nReceiving New Batch")
+            self.state = 2
+            self.brx_count += 1
+            self.BatchSize = header.get("BatchSize")
+            self.packets.append(packet)
+            time.sleep(2)
             self.reset_ptr_rx()
             self.set_mode(MODE.RXCONT)
-            time.sleep(1)
+            if self.brx_count == self.BatchSize:
+                #send BVACK
+                time.sleep(1)
+                self.state = 3                 
+
+        elif flag == 4:
+            print("\nReceived FIN")
+            #send ACK
+            self.state = 5
         
         
 
@@ -131,16 +150,6 @@ class mMPLRLoraServer(LoRa):
                 self.set_mode(MODE.RXCONT) #Receiver mode
                 time.sleep(1) 
                 print ("SYN Sent")
-                
-                '''
-                print()
-                self.write_payload([50, 32, 32, 50, 32, 32, 48, 48, 32, 48, 48, 32, 32, 48, 32, 78, 197, 197, 137]) # Send INF
-                #self.print_time()
-                self.set_mode(MODE.TX)
-                time.sleep(3) # there must be a better solution but sleep() works
-                self.reset_ptr_rx()
-                self.set_mode(MODE.RXCONT) # Receiver mode
-                '''
                 start_time = time.time()
                 while (time.time() - start_time < 10): # wait until receive data or 10s
                     pass;
@@ -148,7 +157,7 @@ class mMPLRLoraServer(LoRa):
             while (self.state == 1):
                 print ("Send: ACK")
                 print ("Connected. Waiting For DATA")
-                ack = self.mplr.genFlagPacket(DestinationID=self.destId, Service=0, BatchSize=0, Flag=5)
+                ack = self.mplr.genFlagPacket(DestinationID=self.destId, Service=self.currentDataType, BatchSize=self.BatchSize, Flag=5)
                 self.sendData(ack)
                 self.set_mode(MODE.SLEEP)
                 self.reset_ptr_rx()
@@ -164,6 +173,50 @@ class mMPLRLoraServer(LoRa):
                 self.reset_ptr_rx()
                 self.set_mode(MODE.RXCONT) # Receiver mode
                 time.sleep(10)
+
+            while (self.state == 3):
+                self.brx_count = 0
+                self.b_count += 1
+                print("Sending Batch ACK")
+                bvack = self.mplr.genFlagPacket(DestinationID=self.destId, Service=self.currentDataType, BatchSize=self.BatchSize, Flag=3)
+                self.sendData(bvack)
+                self.set_mode(MODE.SLEEP)
+                self.reset_ptr_rx()
+                self.set_mode(MODE.RXCONT)
+                time.sleep(2)
+                #self.state = 2 
+                start_time = time.time()
+                while (time.time() - start_time < 10): # wait until receive data or 10s
+                    pass;
+
+            #state 4 -> Corrupt Packet found in the Batch, replace packet
+
+            while (self.state == 5):
+                #Should do 4 way?
+                print("\nSend FIN-ACK")
+                ack = self.mplr.genFlagPacket(DestinationID=self.destId, Service=self.currentDataType, BatchSize=self.BatchSize, Flag=5)
+                self.sendData(ack)
+                self.set_mode(MODE.SLEEP)
+                print("\nConnection Terminated")    
+                #parse the content
+                receivedContent = self.mplr.parsePackets(self.packets, isRaw=False)
+                print(receivedContent.decode())
+                self.reset_ptr_rx()
+                self.set_mode(MODE.RXCONT)
+                time.sleep(1)
+
+
+            self.reset_ptr_rx()
+            self.set_mode(MODE.RXCONT) # Receiver mode
+            time.sleep(10)
+
+            
+            """
+            self.state = 0
+            time.sleep(3) # there must be a better solution but sleep() works
+            self.reset_ptr_rx()
+            self.set_mode(MODE.RXCONT) # Receiver mode
+            """
 
 lora = mMPLRLoraServer(verbose=False)
 #args = parser.parse_args(lora) # configs in LoRaArgumentParser.py
