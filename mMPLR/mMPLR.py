@@ -6,9 +6,27 @@ try:
 except:
     pass
 
+import SecurePass
+
+"""
+    DestinationID   -       3 Bytes
+    DeviceID        -       3 Bytes
+    ServiceType     -       1 Byte
+    SequenceNo      -       2 Bytes
+    Flag            -       1 Byte
+    Payload Size    -       3 Bytes
+    BatchSize       -       2 Bytes
+    * Batches       -       2 Bytes
+    //BatchNo       -       2 Bytes
+    Checksum        -       4 Bytes
+    =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+            Header ==== 19 Bytes
+    =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+    """
+
 class mMPLR:
 
-    def __init__(self, devId):
+    def __init__(self, devId, password = '2bckr0w3'):
         self.DeviceID = str(devId)
         self.DestinationID = '1'
         self.PAYLD_SIZE = '0'
@@ -22,6 +40,9 @@ class mMPLR:
         self.maxPayloadSize = 236 #255Bytes -19Bytes (Header)
         self.maxBatchSize = 99
         #self.Batches = 1
+
+        self.password = password
+        
 
     def setDestinationID(self, deviceId):
         self.DestinationID = str(deviceId)
@@ -50,27 +71,14 @@ class mMPLR:
         flags = {'SYN':0, 'SYN-ACK':1,'DATA':2,'BVACK':3,'FIN':4,'ACK':5}
         self.Flag = str(flags.get(flag.upper()))
 
-    """
-    DestinationID   -       3 Bytes
-    DeviceID        -       3 Bytes
-    ~ ServiceType   -       1 Byte
-    SequenceNo      -       2 Bytes
-    Flag            -       1 Byte
-    Payload Size    -       3 Bytes
-    ~ BatchSize     -       2 Bytes
-    * Batches       -       2 Bytes
-    //BatchNo       -       2 Bytes
-    Checksum        -       4 Bytes
-    """
-
     def genChecksum(self):
-        header = bytes(self.DestinationID, 'ascii').ljust(3)[:3]\
-        +bytes(self.DeviceID, 'ascii').ljust(3)[:3]\
-        +bytes(self.ServiceType, 'ascii').ljust(1)\
-        +bytes(self.SequenceNo, 'ascii').ljust(2)\
-        +bytes(self.Flag, 'ascii').ljust(1)\
-        +bytes(self.PAYLD_SIZE, 'ascii').ljust(3)\
-        +bytes(self.BatchSize, 'ascii').ljust(2)
+        header = bytes(self.DestinationID, 'utf-8').ljust(3)[:3]\
+        +bytes(self.DeviceID, 'utf-8').ljust(3)[:3]\
+        +bytes(self.ServiceType, 'utf-8').ljust(1)\
+        +bytes(self.SequenceNo, 'utf-8').ljust(2)\
+        +bytes(self.Flag, 'utf-8').ljust(1)\
+        +bytes(self.PAYLD_SIZE, 'utf-8').ljust(3)\
+        +bytes(self.BatchSize, 'utf-8').ljust(2)
         #+bytes(self.Batches, 'ascii').ljust(2))
 
         self.Checksum = hashlib.md5(header).digest()[:4] 
@@ -99,8 +107,9 @@ class mMPLR:
         self.setFlag(flag=Flag)
         return self.genPacket(packetNo=0, payload="")
         
-    def getPackets(self, data, dataType, destinationId):
+    def getPackets(self, data, dataType, destinationId, isEncrypted = False):
         packets = []
+        if isEncrypted: data = bytes(SecurePass.encrypt(data, self.password))
         leng = len(data)
         self.setDestinationID(destinationId)
         self.setBatchSize(leng//self.maxPayloadSize+ (1 if leng%self.maxPayloadSize else 0))
@@ -113,7 +122,6 @@ class mMPLR:
             packets.append(self.genPacket(i, data[i*self.maxPayloadSize: ]))    
         return packets
 
-    
     def parsePacket(self, rawpacket):
         print("Parsing Packet (length ", len(rawpacket), ") : ", rawpacket)
         assert len(rawpacket) >= 19
@@ -130,37 +138,30 @@ class mMPLR:
         if header["Checksum"] != hashlib.md5(rawheader[:-4]).digest()[:4]:
             print("Packet Corrupt.\nPacket ",header["SequenceNo"], " to be resent")
             return {"isCorrupt":True, "PacketNo":header["SequenceNo"]} 
-        content = rawpacket[19:]
+        content = rawpacket[19:]  
         return {"Header": header, "Content": content}
 
-    def parseRawPackets(self, packets):
+    def parsePackets(self, packets, isRaw = True, isEncrypted = False):
         content = b''
         BatchACK = []
         for pkt in packets:
-            packet = self.parsePacket(pkt)
+            packet = self.parsePacket(pkt) if isRaw else pkt
             #print(packet)
             if packet.get("isCorrupt", False):
                 BatchACK.append(packet.get("PacketNo"))
                 break
             content += packet.get("Content")
         if len(BatchACK): return print("Batch Partially Corrupt")
-        return content
-    
-    def parsePackets(self, packets):
-        content = b''
-        BatchACK = []
-        for packet in packets:
-            if packet.get("isCorrupt", False):
-                BatchACK.append(packet.get("PacketNo"))
-                break
-            content += packet.get("Content")
-        if len(BatchACK): return print("Batch Partially Corrupt")
-        return content
+        return content if not isEncrypted else bytes(SecurePass.decrypt(content, self.password))
+
 
 if __name__ == "__main__":
     mplr = mMPLR(devId='1')
     packets = mplr.getPackets("cz3gm8ix0gr092bnzyijsdmau4e8ublxb4gz2jx85gqir8r3sj5ekdigk139g6jalbe0xl1hro9xlvq2sewa8iqo9e46ap2eyu0coojtpfi6tzzre94719c17id9hpvhkw6amcvtmfdf1m9811o71xyx1yb3p9hx8hwcbo7f7qawlupgkm8kttbxqcbj0z53wotey1v33utg0lcjkbug4vx0jvunyxxfhbw0vjqaq493yyw5vsym6xcmkwy2z21ob9xgutg51n86nc9onrw8sgwp1v79bvl3pqo99bnlpsyorb4w1sct1cphr96qc7l6qi9v0u7dgvqiaq9w5ei9t3pvxqjux1dqhx23ffgdo1ke2ub9x4dpr2ioslyr8p2fyvwm30kpun5mok8deld43wmihc3c0ldg8yb01eu4xzdoc6fsmxsqs2poqa87ghdvxfqt24licn9hiureey069n3xdfsr7no8d21z5ndy45k1p6ndhxed", 1, 2)
     print("\n\n\n")
     print(*packets, sep="\n\n\n")
-    print(mplr.parseRawPackets(packets=packets))
+    # for packet in packets:
+    #     l = [int(hex(e), 0) for e in packet]
+    #     print(l, "\n", bytes(l), "\n\n")
+    print(mplr.parsePackets(packets=packets))
         
