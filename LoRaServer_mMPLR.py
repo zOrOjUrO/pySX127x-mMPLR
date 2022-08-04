@@ -27,6 +27,7 @@ from SX127x.LoRa import *
 from SX127x.board_config import BOARD
 
 from mMPLR.mMPLR import mMPLR
+
 #from mMPLR.base64Util import B64Util
 BOARD.setup()
 BOARD.reset()
@@ -52,10 +53,11 @@ class mMPLRLoraServer(LoRa):
 
     def sendData(self, raw):
         data = [int(hex(c), 0) for c in raw]
+        print(data)
         self.write_payload(data)
         BOARD.led_on()
         self.set_mode(MODE.TX)
-        time.sleep(1)
+        time.sleep(3)
 
     def on_rx_done(self):
         BOARD.led_on()
@@ -72,6 +74,7 @@ class mMPLRLoraServer(LoRa):
             print("\nSYN-ACK Received")
             self.BatchSize = header.get("BatchSize")
             self.currentDataType = header.get("Service", 0)
+            print("BatchSize: ",self.BatchSize,"DataType: ", self.currentDataType)
             #Send SYN-ACK
             time.sleep(1) # Wait for the client be ready
             self.state = 1                                              
@@ -118,17 +121,26 @@ class mMPLRLoraServer(LoRa):
         while True:
             while (self.state==0):
                 input("Press Enter to Send SYN")
-                print ("Send: SYN")
-                syn = self.mplr.genFlagPacket(DestinationID=self.destId, Flag=0)
+                
+                syn = self.mplr.genFlagPacket(DestinationID=self.destId, Service=0, BatchSize=0, Flag=0)
+                print ("Send: SYN", syn)
+                
                 self.sendData(syn)
                 self.set_mode(MODE.SLEEP)
                 self.reset_ptr_rx()
-                self.set_mode(MODE.RXCONT)
+                self.set_mode(MODE.RXCONT) #Receiver mode
                 time.sleep(1) 
                 print ("SYN Sent")
+                
+                '''
+                print()
+                self.write_payload([50, 32, 32, 50, 32, 32, 48, 48, 32, 48, 48, 32, 32, 48, 32, 78, 197, 197, 137]) # Send INF
+                #self.print_time()
+                self.set_mode(MODE.TX)
+                time.sleep(3) # there must be a better solution but sleep() works
                 self.reset_ptr_rx()
                 self.set_mode(MODE.RXCONT) # Receiver mode
-            
+                '''
                 start_time = time.time()
                 while (time.time() - start_time < 10): # wait until receive data or 10s
                     pass;
@@ -136,7 +148,7 @@ class mMPLRLoraServer(LoRa):
             while (self.state == 1):
                 print ("Send: ACK")
                 print ("Connected. Waiting For DATA")
-                ack = self.mplr.genFlagPacket(DestinationID=self.destId, Flag=5)
+                ack = self.mplr.genFlagPacket(DestinationID=self.destId, Service=0, BatchSize=0, Flag=5)
                 self.sendData(ack)
                 self.set_mode(MODE.SLEEP)
                 self.reset_ptr_rx()
@@ -153,7 +165,7 @@ class mMPLRLoraServer(LoRa):
                 self.set_mode(MODE.RXCONT) # Receiver mode
                 time.sleep(10)
 
-lora = mylora(verbose=False)
+lora = mMPLRLoraServer(verbose=False)
 #args = parser.parse_args(lora) # configs in LoRaArgumentParser.py
 
 #     Slow+long range  Bw = 125 kHz, Cr = 4/8, Sf = 4096chips/symbol, CRC on. 13 dBm

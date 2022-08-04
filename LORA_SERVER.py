@@ -55,6 +55,7 @@ class mylora(LoRa):
         payload = self.read_payload(nocheck=True)
         print ("Receive: ")
         print(bytes(payload).decode("utf-8",'ignore')) # Receive DATA
+        print(payload)
         self.print_time()
         BOARD.led_off()
         time.sleep(2) # Wait for the client be ready
@@ -93,7 +94,7 @@ class mylora(LoRa):
         while True:
             while (self.var==0):
                 print ("Send: INF")
-                self.write_payload([255, 255, 0, 0, 73, 78, 70, 0]) # Send INF
+                self.write_payload([50, 32, 32, 50, 32, 32, 48, 48, 32, 48, 48, 32, 32, 48, 32, 78, 197, 197, 137]) # Send INF
                 self.print_time()
                 self.set_mode(MODE.TX)
                 time.sleep(3) # there must be a better solution but sleep() works
