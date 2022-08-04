@@ -86,11 +86,13 @@ class mMPLRLoraClient(LoRa):
         
         elif flag==5:
             print("\nReceived ACK")
+            time.sleep(2)
             if self.state == 1:
                 #sending data
                 #for _ in range(2):
+                print("Sending Packet: ", self.packets[0])
                 self.sendData(self.packets[0])
-                time.sleep(2)
+                time.sleep(3)
                 fin = self.mplr.genFlagPacket(DestinationID=self.destId,
                                                 Service=0,
                                                 BatchSize=self.mplr.BatchSize,
@@ -105,7 +107,7 @@ class mMPLRLoraClient(LoRa):
             elif self.state == 5:
                 print("\nConnnection Terminated")
                 self.state = 0
-                time.sleep(5)
+                time.sleep(2)
                 self.reset_ptr_rx()
                 self.set_mode(MODE.RXCONT)
 
