@@ -61,17 +61,22 @@ class mylora(LoRa):
         BOARD.led_off()
         if mens=="INF":
             print("Received data request INF")
-            time.sleep(2)
+        time.sleep(6)
              
-            for j in range(3):
-                print ("Send mens: data, at time ")
-                self.write_payload([255, 255, 0, 0, 68, 65, 84, 65, 32, 82, 65, 83, 80, 66, 69, 82, 82, 89, 32, 80, 73, 0]) # Send DATA RASPBERRY PI
-                self.print_time()
-                self.set_mode(MODE.TX)
-                time.sleep(2)
+        for j in range(3):
+            print ("Send mens: data")
+            text=[b'0  1  00 22351 K1\x95\xdehncbCBXSoSGslMbyfjVTAWyYRFIDTZtwbOQcqLFiaDrkanCbIMOKozzxNMNZDoIUfIhsvWNhjuLVBnHaqhEoyoOJNOwjYgCObHPeYyPkzTwlwbcvjqYikypSFdlcEVBmoJnazsHbHwhIDmWQzAqiIcsySHyIQEqRkUoDahzxJLpmoHvYwBcuzNcgXhBnKnaRwDiitXJPJJTxwIryufdrEoxpUJkLknbxwqqsuqARmEB',
+                  b'1  1  00 22351 K1\x95\xdehncbCBXSoSGslMbyfjVTAWyYRFIDTZtwbOQcqLFiaDrkanCbIMOKozzxNMNZDoIUfIhsvWNhjuLVBnHaqhEoyoOJNOwjYgCObHPeYyPkzTwlwbcvjqYikypSFdlcEVBmoJnazsHbHwhIDmWQzAqiIcsySHyIQEqRkUoDahzxJLpmoHvYwBcuzNcgXhBnKnaRwDiitXJPJJTxwIryufdrEoxpUJkLknbxwqqsuqARmEB',
+                  b'2  1  00 22351 K1\x95\xdehncbCBXSoSGslMbyfjVTAWyYRFIDTZtwbOQcqLFiaDrkanCbIMOKozzxNMNZDoIUfIhsvWNhjuLVBnHaqhEoyoOJNOwjYgCObHPeYyPkzTwlwbcvjqYikypSFdlcEVBmoJnazsHbHwhIDmWQzAqiIcsySHyIQEqRkUoDahzxJLpmoHvYwBcuzNcgXhBnKnaRwDiitXJPJJTxwIryufdrEoxpUJkLknbxwqqsuqARmEB']
+            data = [int(hex(c), 0) for c in text[j]]
+            self.write_payload(data) # Send DATA RASPBERRY PI [255,255,0,0,65,67,75,0]
+            self.print_time()
+            self.set_mode(MODE.TX)
+            time.sleep(2)
 
-            self.reset_ptr_rx()
-            self.set_mode(MODE.RXCONT)
+        self.reset_ptr_rx()
+        self.set_mode(MODE.RXCONT)
+        time.sleep(2)
 
     def on_tx_done(self):
         print("\nTxDone")
@@ -111,8 +116,8 @@ lora = mylora(verbose=False)
 #     Slow+long range  Bw = 125 kHz, Cr = 4/8, Sf = 4096chips/symbol, CRC on. 13 dBm
 lora.set_pa_config(pa_select=1, max_power=21, output_power=15)
 lora.set_bw(BW.BW125)
-lora.set_coding_rate(CODING_RATE.CR4_8)
-lora.set_spreading_factor(12)
+lora.set_coding_rate(CODING_RATE.CR4_5)
+lora.set_spreading_factor(7)
 lora.set_rx_crc(True)
 #lora.set_lna_gain(GAIN.G1)
 #lora.set_implicit_header_mode(False)
