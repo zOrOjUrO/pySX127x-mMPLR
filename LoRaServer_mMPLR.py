@@ -88,6 +88,7 @@ class mMPLRLoraServer(LoRa):
             print("\nSYN-ACK Received")
             self.BatchSize = header.get("BatchSize")
             self.currentDataType = header.get("Service", 0)
+            #parse the nBatches from packet body
             print("BatchSize: ",self.BatchSize,"DataType: ", self.currentDataType)
             #Send ACK
             time.sleep(1) # Wait for the client be ready
@@ -103,9 +104,11 @@ class mMPLRLoraServer(LoRa):
             if self.brx_count == self.BatchSize:
                 #send BVACK
                 time.sleep(1)
+                #b_count increment if batch not corrupt
                 self.state = 4 if self.mplr.isBatchCorrupt() else 3
 
         elif flag == 2 and self.state == 3:
+            #check for end of batches
             print("\nReceiving New Batch")
             self.state = 2
             self.brx_count += 1
@@ -171,6 +174,7 @@ class mMPLRLoraServer(LoRa):
     def start(self):          
         while True:
             while (self.state==0):
+                self.packets.clear()
                 input("Press Enter to Send SYN")
                 
                 syn = self.mplr.genFlagPacket(DestinationID=self.destId, Service=0, BatchSize=0, Flag=0)

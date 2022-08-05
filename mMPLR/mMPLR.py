@@ -6,7 +6,7 @@ try:
 except:
     pass
 
-import SecurePass
+from mMPLR import SecurePass
 
 """
     DestinationID   -       3 Bytes
