@@ -113,7 +113,7 @@ class mMPLR:
         if isEncrypted: data = SecurePass.encrypt(data, self.password)
         leng = len(data)
         self.setDestinationID(destinationId)
-        self.setBatchSize(leng//self.maxPayloadSize+ (1 if leng%self.maxPayloadSize else 0))
+        self.setBatchSize(min(self.maxBatchSize, leng//self.maxPayloadSize+ (1 if leng%self.maxPayloadSize else 0)))
         self.setServiceType(dataType)
         i = 0
         while i < (leng//self.maxPayloadSize):
@@ -186,4 +186,6 @@ if __name__ == "__main__":
     #     l = [int(hex(e), 0) for e in packet]
     #     print(l, "\n", bytes(l), "\n\n")
     print(mplr.parsePacketsAsBatches(batches=batches))
+
+    
         
