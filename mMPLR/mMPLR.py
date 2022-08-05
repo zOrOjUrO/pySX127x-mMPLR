@@ -38,7 +38,7 @@ class mMPLR:
         self.Payload = ''
         
         self.maxPayloadSize = 236 #255Bytes -19Bytes (Header)
-        self.maxBatchSize = 10
+        self.maxBatchSize = 2
         self.Batches = 1
         self.BACK = list()
 
@@ -113,7 +113,7 @@ class mMPLR:
         if isEncrypted: data = SecurePass.encrypt(data, self.password)
         leng = len(data)
         self.setDestinationID(destinationId)
-        self.setBatchSize(min(self.maxBatchSize, leng//self.maxPayloadSize+ (1 if leng%self.maxPayloadSize else 0)))
+        self.setBatchSize(leng//self.maxPayloadSize+ (1 if leng%self.maxPayloadSize else 0))
         self.setServiceType(dataType)
         i = 0
         while i < (leng//self.maxPayloadSize):
@@ -124,16 +124,18 @@ class mMPLR:
         return packets
 
     def getPacketsAsBatches(self, data, dataType, destinationId, isEncrypted = False):
+        maxBatchContentSize = self.maxBatchSize*self.maxPayloadSize
+        
         b = 0
         batches = []
-        packets = self.getPackets(data=data, dataType=dataType, destinationId=destinationId, isEncrypted=isEncrypted)
-        leng = len(packets)
-        self.Batches = leng//self.maxBatchSize+ (1 if leng%self.maxBatchSize else 0)
-        while b < leng//self.maxBatchSize:
-            batches.append(packets[b*self.maxBatchSize: min((b+1)*self.maxBatchSize, leng)])
+        leng = len(data)
+        while b < leng//maxBatchContentSize:
+            batches.append(self.getPackets(data=data[b*maxBatchContentSize: min((b+1)*maxBatchContentSize, leng)], dataType=dataType, destinationId=destinationId, isEncrypted=isEncrypted))
             b += 1
-        if leng%self.maxBatchSize != 0:
-            batches.append(packets[b*self.maxBatchSize: ])
+        if leng%maxBatchContentSize != 0:
+            batches.append(self.getPackets(data=data[b*maxBatchContentSize: ], dataType=dataType, destinationId=destinationId, isEncrypted=isEncrypted))
+            b += 1
+        self.Batches = b
         return batches
 
     def parsePacket(self, rawpacket):
@@ -178,7 +180,7 @@ if __name__ == "__main__":
     mplr = mMPLR(devId='1')
     batches = mplr.getPacketsAsBatches("cz3gm8ix0gr092bnzyijsdmau4e8ublxb4gz2jx85gqir8r3sj5ekdigk139g6jalbe0xl1hro9xlvq2sewa8iqo9e46ap2eyu0coojtpfi6tzzre94719c17id9hpvhkw6amcvtmfdf1m9811o71xyx1yb3p9hx8hwcbo7f7qawlupgkm8kttbxqcbj0z53wotey1v33utg0lcjkbug4vx0jvunyxxfhbw0vjqaq493yyw5vsym6xcmkwy2z21ob9xgutg51n86nc9onrw8sgwp1v79bvl3pqo99bnlpsyorb4w1sct1cphr96qc7l6qi9v0u7dgvqiaq9w5ei9t3pvxqjux1dqhx23ffgdo1ke2ub9x4dpr2ioslyr8p2fyvwm30kpun5mok8deld43wmihc3c0ldg8yb01eu4xzdoc6fsmxsqs2poqa87ghdvxfqt24licn9hiureey069n3xdfsr7no8d21z5ndy45k1p6ndhxed",
                               1, 2)
-    print("\n\n\n")
+    print("\n#Batches: ", mplr.Batches, "\n\n")
     print(*batches, sep="\n\n\n")
     # for packet in packets:
     #     l = [int(hex(e), 0) for e in packet]
