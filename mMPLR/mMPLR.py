@@ -40,6 +40,7 @@ class mMPLR:
         self.maxPayloadSize = 236 #255Bytes -19Bytes (Header)
         self.maxBatchSize = 99
         #self.Batches = 1
+        self.BACK = list()
 
         self.password = password
         
@@ -100,12 +101,12 @@ class mMPLR:
         packet = self.genHeader() + bytes(self.Payload, 'utf-8')
         return packet
 
-    def genFlagPacket(self, DestinationID, Service, BatchSize, Flag):
+    def genFlagPacket(self, DestinationID, Service, BatchSize, Flag, Payload=""):
         self.setDestinationID(DestinationID)
         self.setServiceType(Service)
         self.setBatchSize(BatchSize)
         self.setFlag(flag=Flag)
-        return self.genPacket(packetNo=0, payload="")
+        return self.genPacket(packetNo=0, payload=Payload)
         
     def getPackets(self, data, dataType, destinationId, isEncrypted = False):
         packets = []
@@ -137,23 +138,22 @@ class mMPLR:
         }
         if header["Checksum"] != hashlib.md5(rawheader[:-4]).digest()[:4]:
             print("Packet Corrupt.\nPacket ",header["SequenceNo"], " to be resent")
+            self.BACK.append(header["SequenceNo"])
             return {"isCorrupt":True, "PacketNo":header["SequenceNo"]} 
         content = rawpacket[19:]  
         return {"Header": header, "Content": content}
 
     def parsePackets(self, packets, isRaw = True, isEncrypted = False):
         content = b''
-        BatchACK = []
         for pkt in packets:
             packet = self.parsePacket(pkt) if isRaw else pkt
-            #print(packet)
-            if packet.get("isCorrupt", False):
-                BatchACK.append(packet.get("PacketNo"))
-                break
-            content += packet.get("Content")
-        if len(BatchACK): return print("Batch Partially Corrupt")
+            content += packet.get("Content", "")
+        #reset BACK
+        self.BACK =[]
         return content if not isEncrypted else bytes(SecurePass.decrypt(content, self.password), 'utf-8')
 
+    def isBatchCorrupt(self):
+        return True if len(self.BACK) else False
 
 if __name__ == "__main__":
     mplr = mMPLR(devId='1')
