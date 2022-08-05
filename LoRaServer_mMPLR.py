@@ -33,6 +33,20 @@ BOARD.setup()
 BOARD.reset()
 #parser = LoRaArgumentParser("Lora tester")
 
+"""
+    State 0 - Connection Initiation State (SYN to be sent) 
+    
+    State 1 - SYN Acknowledged - Receive Connection Variables; Sending ACK
+
+    State 2 - Connection Established; Receiving DATA
+
+    State 3 - Batch Receive Complete; Sending BACK
+
+    State 4 - Batch Partially Corrupted; Receiving Corrupt Packets
+
+    State 5 - FIN Received :: Send FIN-ACK; Terminate Connection; Parse Message
+
+"""
 
 class mMPLRLoraServer(LoRa):
     def __init__(self, verbose=False):
@@ -89,7 +103,7 @@ class mMPLRLoraServer(LoRa):
             if self.brx_count == self.BatchSize:
                 #send BVACK
                 time.sleep(1)
-                self.state = 3
+                self.state = 4 if self.mplr.isBatchCorrupt() else 3
 
         elif flag == 2 and self.state == 3:
             print("\nReceiving New Batch")
@@ -103,7 +117,25 @@ class mMPLRLoraServer(LoRa):
             if self.brx_count == self.BatchSize:
                 #send BVACK
                 time.sleep(1)
-                self.state = 3                 
+                self.state = 3
+        
+        elif flag == 2 and self.state == 4:
+            print("\nReceiving Corrupt Batch Packet")
+            #self.state = 2
+            #self.brx_count += 1
+            #self.BatchSize = header.get("BatchSize")
+            seqNo = header.get("SequenceNo")
+            if not packet.get("isCorrupt", False):
+                self.packets.insert(self.mplr.maxBatchSize * (self.b_count)+seqNo, packet)
+                try: self.mplr.BACK.remove(seqNo)
+                except ValueError: pass
+            time.sleep(2)
+            self.reset_ptr_rx()
+            self.set_mode(MODE.RXCONT)
+            if not self.mplr.isBatchCorrupt():
+                #send BVACK
+                time.sleep(1)
+                self.state = 3
 
         elif flag == 4:
             print("\nReceived FIN")
@@ -180,7 +212,9 @@ class mMPLRLoraServer(LoRa):
                 self.brx_count = 0
                 self.b_count += 1
                 print("Sending Batch ACK")
-                bvack = self.mplr.genFlagPacket(DestinationID=self.destId, Service=self.currentDataType, BatchSize=self.BatchSize, Flag=3)
+                bvack = self.mplr.genFlagPacket(DestinationID=self.destId, Service=self.currentDataType, BatchSize=self.BatchSize, 
+                                                Flag=3, Payload=','.join(map(str, self.mplr.BACK)))
+                self.state = 4 if self.mplr.isBatchCorrupt() else 3
                 self.sendData(bvack)
                 self.set_mode(MODE.SLEEP)
                 self.reset_ptr_rx()
@@ -191,8 +225,8 @@ class mMPLRLoraServer(LoRa):
                 while (time.time() - start_time < 10): # wait until receive data or 10s
                     pass;
 
-            #state 4 -> Corrupt Packet found in the Batch, replace packet
-            #use dictionary and set
+            #state 4 -> Corrupt Packet found in the Batch, Receive and replace packets 
+
             while (self.state == 5):
                 #Should do 4 way?
                 print("\nSend FIN-ACK")
