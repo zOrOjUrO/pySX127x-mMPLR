@@ -53,21 +53,20 @@ class mMPLRLoraServer(LoRa):
         super(mMPLRLoraServer, self).__init__(verbose)
         self.set_mode(MODE.SLEEP)
         self.set_dio_mapping([0] * 6)
-        self.state=0
-
-        self.mplr = mMPLR(devId=2)
+        self.state=0                #0 - Listening; 1 - Connect Init; 2 - Connected; 3 - ACK Batch; 
+                                    #4 - Receive Corrupt Batch; 5 - Connection Termination
+        self.mplr    = mMPLR(devId=2)
         self.packets = list()
 
         self.currentDataType = 0    #0 - Text; 1 - Sensor; 2 - Image; 3- Audio, 4 - Control
         self.destId = '2'
-        self.BatchSize = 0
+        self.BatchSize = 0          #Number of packets being sent in the Current Batch
         self.brx_count = 0          #received packets in batch
         self.b_count = 0            #batch count
 
-
     def sendData(self, raw):
         data = [int(hex(c), 0) for c in raw]
-        print(data)
+        #print(data)
         self.write_payload(data)
         BOARD.led_on()
         self.set_mode(MODE.TX)
@@ -77,73 +76,78 @@ class mMPLRLoraServer(LoRa):
         BOARD.led_on()
         #print("\nRxDone")
         self.clear_irq_flags(RxDone=1)
-        pkt = bytes(self.read_payload(nocheck=True))
-        #print(packet) # Receive DATA
+        pkt = bytes(self.read_payload(nocheck=True)) # Receive Raw Packet
         BOARD.led_off()
 
-        packet = self.mplr.parsePacket(rawpacket=pkt)
-        header = packet.get("Header")
-        flag = header.get("Flag")
-        if flag == 1:
-            print("\nSYN-ACK Received")
-            self.BatchSize = header.get("BatchSize")
-            self.currentDataType = header.get("Service", 0)
-            #parse the nBatches from packet body
-            print("BatchSize: ",self.BatchSize,"DataType: ", self.currentDataType)
-            #Send ACK
-            time.sleep(1) # Wait for the client be ready
-            self.state = 1                                              
-
-        elif flag == 2 and self.state == 2:
-            print("\nDATA Packet Received")
-            self.brx_count += 1
-            self.packets.append(packet)
-            time.sleep(2)
-            self.reset_ptr_rx()
-            self.set_mode(MODE.RXCONT)
-            if self.brx_count == self.BatchSize:
-                #send BVACK
-                time.sleep(1)
-                #b_count increment if batch not corrupt
-                self.state = 4 if self.mplr.isBatchCorrupt() else 3
-
-        elif flag == 2 and self.state == 3:
-            #check for end of batches
-            print("\nReceiving New Batch")
-            self.state = 2
-            self.brx_count += 1
-            self.BatchSize = header.get("BatchSize")
-            self.packets.append(packet)
-            time.sleep(2)
-            self.reset_ptr_rx()
-            self.set_mode(MODE.RXCONT)
-            if self.brx_count == self.BatchSize:
-                #send BVACK
-                time.sleep(1)
-                self.state = 3
-        
-        elif flag == 2 and self.state == 4:
-            print("\nReceiving Corrupt Batch Packet")
-            #self.state = 2
-            #self.brx_count += 1
-            #self.BatchSize = header.get("BatchSize")
+        try: 
+            packet = self.mplr.parsePacket(rawpacket=pkt)
+            header = packet.get("Header")
+            flag = header.get("Flag")
             seqNo = header.get("SequenceNo")
-            if not packet.get("isCorrupt", False):
-                self.packets.insert(self.mplr.maxBatchSize * (self.b_count)+seqNo, packet)
-                try: self.mplr.BACK.remove(seqNo)
-                except ValueError: pass
-            time.sleep(2)
-            self.reset_ptr_rx()
-            self.set_mode(MODE.RXCONT)
-            if not self.mplr.isBatchCorrupt():
-                #send BVACK
-                time.sleep(1)
-                self.state = 3
 
-        elif flag == 4:
-            print("\nReceived FIN")
-            #send ACK
-            self.state = 5
+            if flag == 1:
+                print("\nSYN-ACK Received")
+                self.BatchSize = header.get("BatchSize")
+                self.mplr.BACK = set(range(self.BatchSize))
+                self.currentDataType = header.get("Service", 0)
+                #parse the nBatches from packet body
+                print("BatchSize: ",self.BatchSize,"\tDataType: ", self.currentDataType)
+                #Send ACK
+                time.sleep(1) # Wait for the client be ready
+                self.state = 1                                              
+
+            elif flag == 2 and self.state == 2:
+                print("\nDATA Packet Received")
+                self.brx_count += 1
+                self.packets.append(packet)
+                time.sleep(2)
+                self.reset_ptr_rx()
+                self.set_mode(MODE.RXCONT)
+
+                if self.brx_count == self.BatchSize:
+                    #send BVACK
+                    time.sleep(1)
+                    #b_count increment if batch not corrupt
+                    self.state = 4 if self.mplr.isBatchCorrupt() else 3
+
+            elif flag == 2 and self.state == 3:
+                #check for end of batches
+                print("\nReceiving Batch", str(self.b_count+1),"\nFirst Packet of New Batch Received.\n")
+                self.state = 2
+                self.brx_count += 1
+                self.BatchSize = header.get("BatchSize")
+                self.mplr.BACK = set(range(self.BatchSize))
+                self.packets.append(packet)
+                time.sleep(2)
+                self.reset_ptr_rx()
+                self.set_mode(MODE.RXCONT)
+                if self.brx_count == self.BatchSize:
+                    #send BVACK
+                    time.sleep(1)
+                    self.state = 3
+            
+            elif flag == 2 and self.state == 4:
+                print("\nReceiving Corrupt / Missing Batch Packet")
+                if not packet.get("isCorrupt", False):
+                    self.packets.insert(self.mplr.maxBatchSize * (self.b_count)+seqNo, packet)
+                    try: self.mplr.BACK.remove(seqNo)
+                    except ValueError: pass
+                time.sleep(2)
+                self.reset_ptr_rx()
+                self.set_mode(MODE.RXCONT)
+                if not self.mplr.isBatchCorrupt():
+                    #send BVACK
+                    time.sleep(1)
+                    self.state = 3
+
+            elif flag == 4:
+                print("\nReceived FIN")
+                #send ACK
+                self.state = 5
+
+        except: 
+            #Raw or Unstructured Packet Received 
+            pass
         
         
 
@@ -194,7 +198,6 @@ class mMPLRLoraServer(LoRa):
                 print ("Send: ACK")
                 ack = self.mplr.genFlagPacket(DestinationID=self.destId, Service=self.currentDataType, BatchSize=self.BatchSize, Flag=5)
                 self.sendData(ack)
-                print ("Connected. Waiting For DATA")
                 self.set_mode(MODE.SLEEP)
                 self.reset_ptr_rx()
                 self.set_mode(MODE.RXCONT)
@@ -203,14 +206,16 @@ class mMPLRLoraServer(LoRa):
                 start_time = time.time()
                 while (time.time() - start_time < 10): # wait until receive data or 10s
                     pass;
+                
             
             while (self.state == 2):
-                print("Receiving DATA")
+                print ("Connected. Waiting For DATA")
                 self.reset_ptr_rx()
                 self.set_mode(MODE.RXCONT) # Receiver mode
                 start_time = time.time()
                 while (time.time() - start_time < 10): # wait until receive data or 10s
                     pass;
+                #TODO: Implement Fallback for Timeout (BACK)
 
             while (self.state == 3):
                 self.brx_count = 0
@@ -228,8 +233,19 @@ class mMPLRLoraServer(LoRa):
                 start_time = time.time()
                 while (time.time() - start_time < 10): # wait until receive data or 10s
                     pass;
+                #TODO: Implement Fallback for Timeout (Terminate after 3 Attempts)    
 
             #state 4 -> Corrupt Packet found in the Batch, Receive and replace packets 
+            while (self.state == 4):
+                print("Waiting for Corrupt / Missing Packets of the Previous Batch")
+                self.set_mode(MODE.SLEEP)
+                self.reset_ptr_rx()
+                self.set_mode(MODE.RXCONT)
+                time.sleep(2)
+                start_time = time.time()
+                while (time.time() - start_time < 10): # wait until receive data or 10s
+                    pass;
+                #TODO: Implement Fallback for Timeout (Terminate after 3 Attempts)
 
             while (self.state == 5):
                 #Should do 4 way?

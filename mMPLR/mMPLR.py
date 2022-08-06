@@ -26,7 +26,7 @@ from mMPLR import SecurePass
 
 class mMPLR:
 
-    def __init__(self, devId, password = '2bckr0w3'):
+    def __init__(self, devId, password = '2bckr0w3', batchSize=2):
         self.DeviceID = str(devId)
         self.DestinationID = '1'
         self.PAYLD_SIZE = '0'
@@ -38,9 +38,9 @@ class mMPLR:
         self.Payload = ''
         
         self.maxPayloadSize = 236 #255Bytes -19Bytes (Header)
-        self.maxBatchSize = 2
+        self.maxBatchSize = batchSize
         self.Batches = 1
-        self.BACK = list()
+        self.BACK = set()
 
         self.password = password
         
@@ -153,8 +153,9 @@ class mMPLR:
         }
         if header["Checksum"] != hashlib.md5(rawheader[:-4]).digest()[:4]:
             print("Packet Corrupt.\nPacket ",header["SequenceNo"], " to be resent")
-            self.BACK.append(header["SequenceNo"])
+            #self.BACK.append(header["SequenceNo"])
             return {"isCorrupt":True, "PacketNo":header["SequenceNo"]} 
+        self.BACK.remove(header["SequenceNo"])
         content = rawpacket[19:]  
         return {"Header": header, "Content": content}
 
@@ -164,7 +165,7 @@ class mMPLR:
             packet = self.parsePacket(pkt) if isRaw else pkt
             content += packet.get("Content", "")
         #reset BACK
-        self.BACK =[]
+        self.BACK = set()
         return content if not isEncrypted else bytes(SecurePass.decrypt(content, self.password), 'utf-8')
 
     def parsePacketsAsBatches(self, batches, isRaw = True, isEncrypted = False):
