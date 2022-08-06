@@ -175,7 +175,9 @@ class mMPLRLoraServer(LoRa):
         print("\non_FhssChangeChannel")
         print(self.get_irq_flags())
 
-    def start(self):          
+    def start(self):
+        self.bretry_attempts = 0
+        self.bcretry_attempts = 0          
         while True:
             while (self.state==0):
                 self.packets.clear()
@@ -191,7 +193,7 @@ class mMPLRLoraServer(LoRa):
                 time.sleep(1) 
                 print ("SYN Sent")
                 start_time = time.time()
-                while (time.time() - start_time < 10): # wait until receive data or 10s
+                while (time.time() - start_time < 60): # wait until receive data or 60s
                     pass;
             
             while (self.state == 1):
@@ -204,18 +206,18 @@ class mMPLRLoraServer(LoRa):
                 time.sleep(2)
                 self.state = 2 
                 start_time = time.time()
-                while (time.time() - start_time < 10): # wait until receive data or 10s
+                while (time.time() - start_time < 5): # wait until receive data or 10s
                     pass;
                 
-            
             while (self.state == 2):
                 print ("Connected. Waiting For DATA")
                 self.reset_ptr_rx()
                 self.set_mode(MODE.RXCONT) # Receiver mode
                 start_time = time.time()
-                while (time.time() - start_time < 10): # wait until receive data or 10s
+                while (time.time() - start_time < 90): # wait until receive data or 90s
                     pass;
                 #TODO: Implement Fallback for Timeout (BACK)
+                
 
             while (self.state == 3):
                 self.brx_count = 0
@@ -231,9 +233,9 @@ class mMPLRLoraServer(LoRa):
                 time.sleep(2)
                 #self.state = 2 
                 start_time = time.time()
-                while (time.time() - start_time < 10): # wait until receive data or 10s
+                while (time.time() - start_time < 15): # wait until receive data or 15s
                     pass;
-                #TODO: Implement Fallback for Timeout (Terminate after 3 Attempts)    
+                #TODO: Implement Fallback for Timeout (Terminate after 3 Attempts) 
 
             #state 4 -> Corrupt Packet found in the Batch, Receive and replace packets 
             while (self.state == 4):
@@ -262,18 +264,30 @@ class mMPLRLoraServer(LoRa):
                 self.set_mode(MODE.RXCONT)
                 time.sleep(1)
 
+            
+            if(self.state == 2):
+                #Fallback for Timeout (BACK)
+                self.state = 3
+
+            if(self.state == 3): 
+                #Fallback for Timeout (Terminate)  
+                self.bretry_attempts += 1
+                if self.retry_attempts == 3:
+                    print("\n\nNo Response.\nDisconnected\n")
+                    self.state = 0
+                    self.bretry_attempts = 0
+            
+            if(self.state == 4): 
+                #Fallback for Timeout (Terminate)  
+                self.bcretry_attempts += 1
+                if self.bcretry_attempts == 3:
+                    print("\n\nNo Response.\nDisconnected\n")
+                    self.state = 0
 
             self.reset_ptr_rx()
             self.set_mode(MODE.RXCONT) # Receiver mode
             time.sleep(10)
 
-            
-            """
-            self.state = 0
-            time.sleep(3) # there must be a better solution but sleep() works
-            self.reset_ptr_rx()
-            self.set_mode(MODE.RXCONT) # Receiver mode
-            """
 
 lora = mMPLRLoraServer(verbose=False)
 #args = parser.parse_args(lora) # configs in LoRaArgumentParser.py
