@@ -108,12 +108,12 @@ class mMPLR:
         self.setFlag(flag=Flag)
         return self.genPacket(packetNo=0, payload=Payload)
         
-    def getPackets(self, data, dataType, destinationId, isEncrypted = False):
+    def getPackets(self, data, dataType, destinationId, encryptAgain=False):
         packets = []
-        if isEncrypted: data = SecurePass.encrypt(data, self.password)
+        if encryptAgain: data = SecurePass.encrypt(data, self.password)
         leng = len(data)
         self.setDestinationID(destinationId)
-        self.setBatchSize(min(self.maxBatchSize, leng//self.maxPayloadSize+ (1 if leng%self.maxPayloadSize else 0)))
+        self.setBatchSize(leng//self.maxPayloadSize+ (1 if leng%self.maxPayloadSize else 0))
         self.setServiceType(dataType)
         i = 0
         while i < (leng//self.maxPayloadSize):
@@ -125,15 +125,15 @@ class mMPLR:
 
     def getPacketsAsBatches(self, data, dataType, destinationId, isEncrypted = False):
         maxBatchContentSize = self.maxBatchSize*self.maxPayloadSize
-        
+        if isEncrypted: data = SecurePass.encrypt(data, self.password)
         b = 0
         batches = []
         leng = len(data)
         while b < leng//maxBatchContentSize:
-            batches.append(self.getPackets(data=data[b*maxBatchContentSize: min((b+1)*maxBatchContentSize, leng)], dataType=dataType, destinationId=destinationId, isEncrypted=isEncrypted))
+            batches.append(self.getPackets(data=data[b*maxBatchContentSize: min((b+1)*maxBatchContentSize, leng)], dataType=dataType, destinationId=destinationId, encryptAgain=False))
             b += 1
         if leng%maxBatchContentSize != 0:
-            batches.append(self.getPackets(data=data[b*maxBatchContentSize: ], dataType=dataType, destinationId=destinationId, isEncrypted=isEncrypted))
+            batches.append(self.getPackets(data=data[b*maxBatchContentSize: ], dataType=dataType, destinationId=destinationId, encryptAgain=False))
             b += 1
         self.Batches = b
         return batches
