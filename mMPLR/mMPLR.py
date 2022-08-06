@@ -155,7 +155,8 @@ class mMPLR:
             print("Packet Corrupt.\nPacket ",header["SequenceNo"], " to be resent")
             #self.BACK.append(header["SequenceNo"])
             return {"isCorrupt":True, "PacketNo":header["SequenceNo"]} 
-        self.BACK.remove(header["SequenceNo"])
+        try: self.BACK.remove(header["SequenceNo"])
+        except (KeyError, ValueError): pass
         content = rawpacket[19:]  
         return {"Header": header, "Content": content}
 
