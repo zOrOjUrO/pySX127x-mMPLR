@@ -55,7 +55,7 @@ class mMPLRLoraServer(LoRa):
         self.set_dio_mapping([0] * 6)
         self.state=0                #0 - Listening; 1 - Connect Init; 2 - Connected; 3 - ACK Batch; 
                                     #4 - Receive Corrupt Batch; 5 - Connection Termination
-        self.mplr    = mMPLR(devId=2)
+        self.mplr    = mMPLR(devId=2, batchSize=1000)
         self.packets = list()
 
         self.currentDataType = 0    #0 - Text; 1 - Sensor; 2 - Image; 3- Audio, 4 - Control
@@ -97,7 +97,7 @@ class mMPLRLoraServer(LoRa):
                 self.state = 1                                              
 
             elif flag == 2 and self.state == 2:
-                print("\nDATA Packet Received")
+                print("\nDATA Packet Received, Packet No",header.get("SequenceNo"))
                 self.brx_count += 1
                 self.packets.append(packet)
                 time.sleep(2)
@@ -108,16 +108,18 @@ class mMPLRLoraServer(LoRa):
                     #send BVACK
                     time.sleep(1)
                     #b_count increment if batch not corrupt
-                    self.state = 4 if self.mplr.isBatchCorrupt() else 3
+                    self.state = 3
 
             elif flag == 2 and self.state == 3:
                 #check for end of batches
-                print("\nReceiving Batch", str(self.b_count+1),"\nFirst Packet of New Batch Received.\n")
+                print("\nReceiving Batch", str(self.b_count+1),
+                      "\nPacket of New Batch Received, Packet no",header.get("SequenceNo"))
                 self.state = 2
                 self.brx_count += 1
                 self.BatchSize = header.get("BatchSize")
                 self.mplr.BACK = set(range(self.BatchSize))
                 self.packets.append(packet)
+                self.mplr.ackPacket(seqNo)
                 time.sleep(2)
                 self.reset_ptr_rx()
                 self.set_mode(MODE.RXCONT)
@@ -130,8 +132,7 @@ class mMPLRLoraServer(LoRa):
                 print("\nReceiving Corrupt / Missing Batch Packet")
                 if not packet.get("isCorrupt", False):
                     self.packets.insert(self.mplr.maxBatchSize * (self.b_count)+seqNo, packet)
-                    try: self.mplr.BACK.remove(seqNo)
-                    except ValueError: pass
+                    self.mplr.ackPacket(seqNo)
                 time.sleep(2)
                 self.reset_ptr_rx()
                 self.set_mode(MODE.RXCONT)
@@ -184,16 +185,16 @@ class mMPLRLoraServer(LoRa):
                 input("Press Enter to Send SYN")
                 
                 syn = self.mplr.genFlagPacket(DestinationID=self.destId, Service=0, BatchSize=0, Flag=0)
-                print ("Send: SYN", syn)
-                
+                print ("Send: SYN")#, syn)
+                print ("SYN Sent")
                 self.sendData(syn)
                 self.set_mode(MODE.SLEEP)
                 self.reset_ptr_rx()
                 self.set_mode(MODE.RXCONT) #Receiver mode
                 time.sleep(1) 
-                print ("SYN Sent")
+                
                 start_time = time.time()
-                while (time.time() - start_time < 60): # wait until receive data or 60s
+                while (time.time() - start_time < 10): # wait until receive data or 60s
                     pass;
             
             while (self.state == 1):
@@ -205,17 +206,15 @@ class mMPLRLoraServer(LoRa):
                 self.set_mode(MODE.RXCONT)
                 time.sleep(2)
                 self.state = 2 
-                start_time = time.time()
-                while (time.time() - start_time < 5): # wait until receive data or 10s
-                    pass;
                 
             while (self.state == 2):
                 print ("Connected. Waiting For DATA")
                 self.reset_ptr_rx()
                 self.set_mode(MODE.RXCONT) # Receiver mode
                 start_time = time.time()
-                while (time.time() - start_time < 90): # wait until receive data or 90s
+                while (time.time() - start_time < 30): # wait until receive data or 20s
                     pass;
+                self.state = 3
                 #TODO: Implement Fallback for Timeout (BACK)
                 
 
@@ -265,14 +264,12 @@ class mMPLRLoraServer(LoRa):
                 time.sleep(1)
 
             
-            if(self.state == 2):
-                #Fallback for Timeout (BACK)
-                self.state = 3
+            
 
             if(self.state == 3): 
                 #Fallback for Timeout (Terminate)  
                 self.bretry_attempts += 1
-                if self.retry_attempts == 3:
+                if self.bretry_attempts == 3:
                     print("\n\nNo Response.\nDisconnected\n")
                     self.state = 0
                     self.bretry_attempts = 0

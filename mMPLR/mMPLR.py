@@ -26,7 +26,7 @@ from mMPLR import SecurePass
 
 class mMPLR:
 
-    def __init__(self, devId, password = '2bckr0w3', batchSize=5):
+    def __init__(self, devId, password = '2bckr0w3', batchSize=10):
         self.DeviceID = str(devId)
         self.DestinationID = '1'
         self.PAYLD_SIZE = '0'
@@ -158,8 +158,7 @@ class mMPLR:
             print("Packet Corrupt.\nPacket ",header["SequenceNo"], " to be resent")
             #self.BACK.append(header["SequenceNo"])
             return {"isCorrupt":True, "PacketNo":header["SequenceNo"]} 
-        try: self.BACK.remove(header["SequenceNo"])
-        except (KeyError, ValueError): pass
+        self.ackPacket(header["SequenceNo"])
         content = rawpacket[19:]  
         return {"Header": header, "Content": content}
 
@@ -177,6 +176,10 @@ class mMPLR:
         for batch in batches:
             content += self.parsePackets(batch, isRaw=isRaw, isEncrypted=isEncrypted)
         return content
+
+    def ackPacket(self, seqNo):
+        try: self.BACK.remove(seqNo)
+        except (KeyError, ValueError): pass
 
     def isBatchCorrupt(self):
         return True if len(self.BACK) else False
