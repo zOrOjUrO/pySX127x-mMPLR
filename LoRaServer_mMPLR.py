@@ -240,7 +240,7 @@ class mMPLRLoraServer(LoRa):
                 print("\nConnection Terminated")
                 self.state = 0
                 #parse the content
-                receivedContent = self.mplr.parsePackets(self.packets, isRaw=False)
+                receivedContent = self.mplr.parsePackets(self.packets, isRaw=False, isEncrypted = True)
                 print("Received Content: ", receivedContent.decode())
                 self.reset_ptr_rx()
                 self.set_mode(MODE.RXCONT)
