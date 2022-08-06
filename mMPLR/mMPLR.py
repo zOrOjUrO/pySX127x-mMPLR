@@ -26,7 +26,7 @@ from mMPLR import SecurePass
 
 class mMPLR:
 
-    def __init__(self, devId, password = '2bckr0w3', batchSize=2):
+    def __init__(self, devId, password = '2bckr0w3', batchSize=5):
         self.DeviceID = str(devId)
         self.DestinationID = '1'
         self.PAYLD_SIZE = '0'
@@ -63,7 +63,10 @@ class mMPLR:
 
     def setBatchSize(self, batchSize):
         assert self.maxBatchSize >= int(batchSize)
-        self.BatchSize = str(batchSize)    
+        self.BatchSize = str(batchSize)
+    
+    def getBatchSize(self):
+        return int(self.BatchSize) 
     
     def setFlag(self, flag):
         if type(flag) != str:
@@ -139,7 +142,7 @@ class mMPLR:
         return batches
 
     def parsePacket(self, rawpacket):
-        print("Parsing Packet (length ", len(rawpacket), ") : ", rawpacket)
+        #print("Parsing Packet (length ", len(rawpacket), ") : ", rawpacket)
         assert len(rawpacket) >= 19
         rawheader = rawpacket[:19]
         header = {"DestinationUID":rawheader[:3].rstrip().decode('ascii'),
