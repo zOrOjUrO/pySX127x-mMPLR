@@ -20,6 +20,8 @@
 #
 # You should have received a copy of the GNU General Public License along with pySX127.  If not, see
 # <http://www.gnu.org/licenses/>.
+import string
+import random
 
 import time
 from SX127x.LoRa import *
@@ -38,25 +40,27 @@ class mMPLRLoraClient(LoRa):
         super(mMPLRLoraClient, self).__init__(verbose)
         self.set_mode(MODE.SLEEP)
         self.set_dio_mapping([0] * 6)
-
-        self.mplr = mMPLR(devId=1)
-
+        self.state = 0
+        self.mplr = mMPLR(devId=1,batchSize=10)
+        self.currentBatch = 0
+        self.resendingBatch = []
         self.corrupt = []
         self.nBatches = 0
 
     def sendData(self, raw):
         data = [int(hex(c), 0) for c in raw]
+        print("\nSending : ")#,bytes(data))
         self.write_payload(data)
         BOARD.led_on()
         self.set_mode(MODE.TX)
-        time.sleep(2)
+        time.sleep(3)
 
     def on_rx_done(self):
         BOARD.led_on()
         #print("\nRxDone")
         self.clear_irq_flags(RxDone=1)
         p = self.read_payload(nocheck=True)
-        print(p)
+        #print(p)
         pkt = bytes(p)
         #print(packet) # Receive DATA
         BOARD.led_off()
@@ -68,59 +72,60 @@ class mMPLRLoraClient(LoRa):
             print("\nSYN Received")
             self.destId = header.get("DeviceUID")
             #Generate Data for Transmission
-            self.packets = self.mplr.getPackets(data="This is a Test", 
-                                                dataType="0", 
-                                                destinationId=self.destId)
-            synack = self.mplr.genFlagPacket(DestinationID=self.destId,
-                                            Service=0,
-                                            BatchSize=self.mplr.BatchSize,
-                                            Flag=1)
-            time.sleep(3) # Wait for the client be ready
-            print ("Send: SYN-ACK")
+            with open('img.txt') as f:
+                imgData = f.readlines()
+            res = ''.join(random.choices(string.ascii_letters, k=2600))
+            self.batches = self.mplr.getPacketsAsBatches(data = imgData[0]
+                                                ,dataType="2", 
+                                                destinationId=self.destId,
+                                                isEncrypted=True)
+            #print("Generated: ", *self.batches, sep="\n")
+            
+            time.sleep(3) # Wait for the client be ready            
             self.state = 1
-            self.sendData(synack)
-            self.set_mode(MODE.SLEEP)
-            self.reset_ptr_rx()
-            self.set_mode(MODE.RXCONT)
-            time.sleep(2)
+            
         
         elif flag==5:
             print("\nReceived ACK")
-            time.sleep(2)
+            time.sleep(3)
             if self.state == 1:
+                self.state = 2
                 #sending data
-                #for _ in range(2):
-                print("Sending Packet: ", self.packets[0])
-                self.sendData(self.packets[0])
-                time.sleep(3)
-                fin = self.mplr.genFlagPacket(DestinationID=self.destId,
-                                                Service=0,
-                                                BatchSize=self.mplr.BatchSize,
-                                                Flag=4)
-                self.sendData(fin)
-                self.state = 5
-                self.set_mode(MODE.SLEEP)
-                self.reset_ptr_rx()
-                self.set_mode(MODE.RXCONT)
-                time.sleep(2)
+                print("\nSending ", str(self.mplr.Batches), " Batches of Packets.\n\n" )
 
             elif self.state == 5:
+                print("\nFIN-ACK received")
+                print("Send: ACK")
+                ack = self.mplr.genFlagPacket(DestinationID=self.destId, Service=0, BatchSize=self.mplr.BatchSize, Flag=5)
+                self.sendData(ack)
+                self.set_mode(MODE.SLEEP)
                 print("\nConnnection Terminated")
                 self.state = 0
                 time.sleep(2)
                 self.reset_ptr_rx()
                 self.set_mode(MODE.RXCONT)
-
-            """    
-            if req=="CNT":
-                print("Received data request CNT")
-                time.sleep(2)
-                packets = self.mplr.getPackets("cz3gm8ix0gr092bnzyijsdmau4e8ublxb4gz2jx85gqir8r3sj5ekdigk139g6jalbe0xl1hro9xlvq2sewa8iqo9e46ap2eyu0coojtpfi6tzzre94719c17id9hpvhkw6amcvtmfdf1m9811o71xyx1yb3p9hx8hwcbo7f7qawlupgkm8kttbxqcbj0z53wotey1v33utg0lcjkbug4vx0jvunyxxfhbw0vjqaq493yyw5vsym6xcmkwy2z21ob9xgutg51n86nc9onrw8sgwp1v79bvl3pqo99bnlpsyorb4w1sct1cphr96qc7l6qi9v0u7dgvqiaq9w5ei9t3pvxqjux1dqhx23ffgdo1ke2ub9x4dpr2ioslyr8p2fyvwm30kpun5mok8deld43wmihc3c0ldg8yb01eu4xzdoc6fsmxsqs2poqa87ghdvxfqt24licn9hiureey069n3xdfsr7no8d21z5ndy45k1p6ndhxed", 1, 2)
-                print("Sending ", self.mplr.BatchSize, " Packets")
-                for packet in packets: 
-                    print("Sending Packet --> ", packet)
-                    self.sendData(packet)
-            """    
+                print("\n\n\Listening for new Connections . . .\n\n")
+        
+        elif flag==3 and self.state == 3:
+            print("Batch ACK received")
+            payloadSize = header.get("PayloadSize")
+            payload = packet.get("Content")
+            if payloadSize == 0:
+                #implement moving to next here or in state 2
+                self.currentBatch += 1
+                if self.currentBatch > len(self.batches)-1:
+                    self.state = 4
+                else:
+                    self.state = 2
+            else:
+                self.resendingBatch = list(map(int, bytes(payload).decode("utf-8").split(",")))
+                self.state = 6
+            
+            
+        elif flag == 4:
+            self.state = 4
+        
+            
         else:
             time.sleep(5)
             self.reset_ptr_rx()
@@ -150,12 +155,100 @@ class mMPLRLoraClient(LoRa):
         print("\non_FhssChangeChannel")
         print(self.get_irq_flags())
 
-    def start(self):          
+    def start(self):
+        print("\nClient Initialized\n")
+                
         while True:
             self.reset_ptr_rx()
             self.set_mode(MODE.RXCONT) # Receiver mode
-            while True:
+            while self.state == 0:
                 pass;
+            
+            while self.state == 1: #state after receiving syn
+                initBatchSize = self.mplr.getBatchSize() if self.mplr.Batches == 1 else self.mplr.maxBatchSize
+                synack = self.mplr.genFlagPacket(DestinationID=self.destId,
+                                            Service=0,
+                                            BatchSize=initBatchSize,
+                                            Flag=1,
+                                            Payload="#Batches:"+str(self.mplr.Batches))
+                print ("Send: SYN-ACK")
+                self.sendData(synack)
+                self.set_mode(MODE.SLEEP)
+                self.reset_ptr_rx()
+                self.set_mode(MODE.RXCONT)
+                time.sleep(2)
+                start_time = time.time()
+                while (time.time()-start_time < 10):
+                    pass;
+                
+            while self.state == 2: #packets/batches sending state
+                time.sleep(3)
+                for seq, packet in enumerate(self.batches[self.currentBatch]):
+                    
+                    """
+                    count += 1
+                    if count == 3 and self.currentBatch == 0:
+                        print(packet)
+                        print("skipped 3rd")
+                        continue
+                    """
+                    print("\nSend: DATA ", str(self.currentBatch), ".",str(seq))
+                    ##print(packet)
+                    self.sendData(packet)
+                    self.set_mode(MODE.TX)
+                    time.sleep(3)             
+                self.set_mode(MODE.SLEEP)
+                self.state = 3
+                
+                
+            while self.state == 3: #waiting for batchAck
+                print("waiting for batchAck")
+                self.reset_ptr_rx()
+                self.set_mode(MODE.RXCONT) #wait for batch ack
+                time.sleep(1)                
+                start_time = time.time()
+                while (time.time() - start_time < 10): # wait until receive batch ack or 10s
+                    pass;
+                
+                #self.state = 4 #temporary setup to go to state 4
+                #pass;
+            
+            while self.state == 4: #FIN sending state should be done when all batches are sent
+                self.currentBatch = 0
+                self.batches.clear()
+                fin = self.mplr.genFlagPacket(DestinationID=self.destId,
+                                                Service=0,
+                                                BatchSize=self.mplr.BatchSize,
+                                                Flag=4)
+                print("Sending FIN")
+                self.sendData(fin)
+                self.state = 5
+                self.set_mode(MODE.SLEEP)
+                self.reset_ptr_rx()
+                self.set_mode(MODE.RXCONT)
+                time.sleep(2)
+                start_time = time.time()
+                while (time.time() - start_time < 10): # wait until receive batch ack or 10s
+                    pass;
+            
+            while self.state == 6:
+                for idx in self.resendingBatch:
+                    self.sendData(self.batches[self.currentBatch][idx])
+                    self.set_mode(MODE.TX)
+                    time.sleep(5)             
+                self.set_mode(MODE.SLEEP)
+                self.state = 3 #BatchAck state
+                self.reset_ptr_rx()
+                self.set_mode(MODE.RXCONT) #wait for batch ack
+                time.sleep(1)
+                
+                start_time = time.time()
+                while (time.time() - start_time < 10): # wait until receive batch ack or 10s
+                    pass;
+                    
+                
+                
+                
             
 
 lora = mMPLRLoraClient(verbose=False)
@@ -164,8 +257,10 @@ lora = mMPLRLoraClient(verbose=False)
 #     Slow+long range  Bw = 125 kHz, Cr = 4/8, Sf = 4096chips/symbol, CRC on. 13 dBm
 lora.set_pa_config(pa_select=1, max_power=21, output_power=15)
 lora.set_bw(BW.BW125)
-lora.set_coding_rate(CODING_RATE.CR4_8)
-lora.set_spreading_factor(12)
+#lora.set_coding_rate(CODING_RATE.CR4_8) 
+#lora.set_spreading_factor(12)
+lora.set_coding_rate(CODING_RATE.CR4_5)
+lora.set_spreading_factor(7)
 lora.set_rx_crc(True)
 #lora.set_lna_gain(GAIN.G1)
 #lora.set_implicit_header_mode(False)
@@ -190,3 +285,5 @@ finally:
     print("Exit")
     lora.set_mode(MODE.SLEEP)
 BOARD.teardown()
+
+
